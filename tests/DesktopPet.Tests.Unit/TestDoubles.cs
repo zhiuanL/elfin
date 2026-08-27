@@ -15,6 +15,7 @@ internal sealed class TestSettingsService : ISettingsService
 {
     public AppSettings Current { get; set; } = new();
     public int LoadCount { get; private set; }
+    public bool FailWrites { get; set; }
     public Task<SettingsLoadResult> LoadAsync(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -24,9 +25,11 @@ internal sealed class TestSettingsService : ISettingsService
     public Task SaveAsync(AppSettings settings, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
+        if (FailWrites) throw new IOException("Test storage unavailable.");
         Current = settings;
         return Task.CompletedTask;
     }
+    public Task UpdateAsync(Func<AppSettings, AppSettings> update, CancellationToken ct) => SaveAsync(update(Current), ct);
 }
 internal sealed class MemoryDirectories : IAppDataDirectories
 {

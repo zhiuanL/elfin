@@ -3,8 +3,8 @@
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
   <data name="AppTitle" xml:space="preserve"><value>DesktopPet · Control Center</value></data>
-  <data name="BootstrapTitle" xml:space="preserve"><value>Phase 0</value></data>
-  <data name="BootstrapDescription" xml:space="preserve"><value>The application foundation is ready. Companion features will be added in later phases.</value></data>
+  <data name="BootstrapTitle" xml:space="preserve"><value>Phase 1</value></data>
+  <data name="BootstrapDescription" xml:space="preserve"><value>Window foundation is ready. Drag the placeholder to move it, double-click to open this center, or use its context menu and tray.</value></data>
   <data name="OfflineReady" xml:space="preserve"><value>Local infrastructure is ready. No AI account or network connection is required.</value></data>
   <data name="AiStorageUnavailable" xml:space="preserve"><value>AI storage is unavailable. Local core remains available.</value></data>
   <data name="SettingsRecovered" xml:space="preserve"><value>Invalid settings were preserved and safe defaults restored.</value></data>
@@ -13,4 +13,12 @@
   <data name="LogLocation" xml:space="preserve"><value>Logs</value></data>
   <data name="BackupLocation" xml:space="preserve"><value>Backups</value></data>
   <data name="Close" xml:space="preserve"><value>Close</value></data>
+  <data name="ShowPet" xml:space="preserve"><value>Show pet</value></data>
+  <data name="HidePet" xml:space="preserve"><value>Hide pet</value></data>
+  <data name="TogglePet" xml:space="preserve"><value>Toggle pet</value></data>
+  <data name="OpenControlCenter" xml:space="preserve"><value>Open control center</value></data>
+  <data name="ExitApplication" xml:space="preserve"><value>Exit application</value></data>
+  <data name="PetTitle" xml:space="preserve"><value>DesktopPet · Phase 1</value></data>
+  <data name="PetHint" xml:space="preserve"><value>Drag to move · Double-click for control center · Right-click for menu</value></data>
+  <data name="CommandFailed" xml:space="preserve"><value>Window operation or state save failed. Check local logs and retry before exiting.</value></data>
 </root>

@@ -3,9 +3,9 @@ using DesktopPet.App.ViewModels;
 
 namespace DesktopPet.App.Views;
 
-public partial class MainWindow : Window
+public partial class PetWindow : Window
 {
-    public MainWindow(MainWindowViewModel viewModel)
+    public PetWindow(PetWindowViewModel viewModel)
     {
         InitializeComponent();
         DataContext = viewModel;

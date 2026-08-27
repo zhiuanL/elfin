@@ -3,8 +3,8 @@
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
   <data name="AppTitle" xml:space="preserve"><value>桌面小精灵 · 控制中心</value></data>
-  <data name="BootstrapTitle" xml:space="preserve"><value>Phase 0</value></data>
-  <data name="BootstrapDescription" xml:space="preserve"><value>工程基础已就绪。桌面陪伴功能将在后续阶段逐步加入。</value></data>
+  <data name="BootstrapTitle" xml:space="preserve"><value>Phase 1</value></data>
+  <data name="BootstrapDescription" xml:space="preserve"><value>窗口基础已就绪。拖动占位小精灵调整位置，双击打开控制中心；右键或托盘提供窗口命令。</value></data>
   <data name="OfflineReady" xml:space="preserve"><value>本地基础设施已就绪，无需 AI 账号或网络连接。</value></data>
   <data name="AiStorageUnavailable" xml:space="preserve"><value>AI 数据库暂不可用，本地核心仍可运行。</value></data>
   <data name="SettingsRecovered" xml:space="preserve"><value>无效配置已保留，并恢复为安全默认值。</value></data>
@@ -13,4 +13,12 @@
   <data name="LogLocation" xml:space="preserve"><value>日志目录</value></data>
   <data name="BackupLocation" xml:space="preserve"><value>备份目录</value></data>
   <data name="Close" xml:space="preserve"><value>关闭</value></data>
+  <data name="ShowPet" xml:space="preserve"><value>显示小精灵</value></data>
+  <data name="HidePet" xml:space="preserve"><value>隐藏小精灵</value></data>
+  <data name="TogglePet" xml:space="preserve"><value>切换显示</value></data>
+  <data name="OpenControlCenter" xml:space="preserve"><value>打开控制中心</value></data>
+  <data name="ExitApplication" xml:space="preserve"><value>退出程序</value></data>
+  <data name="PetTitle" xml:space="preserve"><value>桌面小精灵 · Phase 1</value></data>
+  <data name="PetHint" xml:space="preserve"><value>拖动移动 · 双击控制中心 · 右键菜单</value></data>
+  <data name="CommandFailed" xml:space="preserve"><value>窗口操作或状态保存失败。请检查本地日志；退出前可重试。</value></data>
 </root>

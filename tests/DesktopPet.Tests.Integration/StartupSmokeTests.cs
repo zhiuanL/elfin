@@ -1,5 +1,10 @@
 using System.Diagnostics;
 using DesktopPet.App.Bootstrap;
+using DesktopPet.Application.Configuration;
+using DesktopPet.Domain.Platform;
+using DesktopPet.Infrastructure.Configuration;
+using DesktopPet.Windows.Windowing;
+using Microsoft.Extensions.Options;
 
 namespace DesktopPet.Tests.Integration;
 
@@ -49,6 +54,32 @@ public sealed class StartupSmokeTests
         Assert.Throws<ArgumentException>(() => StartupOptions.Parse(["--smoke-test"]));
         Assert.Throws<ArgumentException>(() => StartupOptions.Parse(["--data-root", "C:\\example"]));
         Assert.Throws<ArgumentException>(() => StartupOptions.Parse(["--unknown"]));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RealProcessRestoresOrRepairsPersistedPhysicalPosition(bool offscreen)
+    {
+        using var env = new TestEnvironment();
+        var primary = new WindowsDisplayService().GetDisplays().First(display => display.IsPrimary);
+        var origin = offscreen ? new PixelPoint(1_000_000, 1_000_000) :
+            new PixelPoint(primary.WorkingArea.X + 40, primary.WorkingArea.Y + 40);
+        using var settings = new JsonSettingsService(env.Directories, Options.Create(new AppSettings()), env.Logger, TimeProvider.System);
+        await settings.LoadAsync(default);
+        await settings.UpdateAsync(current => current with { PetWindow = new() { Position = new(origin, primary.Id) } }, default);
+        Assert.Equal(0, await RunApp(env));
+        var restored = (await settings.LoadAsync(default)).Settings.PetWindow.Position!;
+        if (!offscreen) Assert.Equal(origin, restored.Origin);
+        else
+        {
+            Assert.NotEqual(origin, restored.Origin);
+            Assert.InRange(restored.Origin.X, primary.WorkingArea.X, primary.WorkingArea.X + primary.WorkingArea.Width - 1);
+            Assert.InRange(restored.Origin.Y, primary.WorkingArea.Y, primary.WorkingArea.Y + primary.WorkingArea.Height - 1);
+        }
+        Assert.Equal(0, await RunApp(env));
+        Assert.Equal(restored, (await settings.LoadAsync(default)).Settings.PetWindow.Position);
+        Assert.Contains("Stopping", ReadLogs(env));
     }
 
     private static string ReadLogs(TestEnvironment env) =>

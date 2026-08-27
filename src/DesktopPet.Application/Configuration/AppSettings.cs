@@ -4,7 +4,7 @@ namespace DesktopPet.Application.Configuration;
 
 public sealed record AppSettings
 {
-    public const int CurrentSchemaVersion = 1;
+    public const int CurrentSchemaVersion = 2;
     public int SchemaVersion { get; init; } = CurrentSchemaVersion;
     public string Culture { get; init; } = "zh-CN";
     public MovementMode MovementMode { get; init; } = MovementMode.Hybrid;
@@ -14,12 +14,15 @@ public sealed record AppSettings
     public PerformanceMode PerformanceMode { get; init; } = PerformanceMode.Auto;
     public LogOptions Logging { get; init; } = new();
     public SecurityLimits Security { get; init; } = new();
+    public PetWindowSettings PetWindow { get; init; } = new();
+    public ControlCenterCloseBehavior ControlCenterCloseBehavior { get; init; } = ControlCenterCloseBehavior.HideToTray;
 
     public bool IsValid() => SchemaVersion == CurrentSchemaVersion &&
         Culture is "zh-CN" or "en-US" &&
         Enum.IsDefined(MovementMode) && Enum.IsDefined(HybridStrategy) &&
         Enum.IsDefined(DisplayPolicy) && Enum.IsDefined(MotionStyle) && Enum.IsDefined(PerformanceMode) &&
-        Logging is not null && Logging.IsValid() && Security is not null && Security.IsValid();
+        Logging is not null && Logging.IsValid() && Security is not null && Security.IsValid() &&
+        PetWindow is not null && Enum.IsDefined(ControlCenterCloseBehavior);
 }
 public sealed record LogOptions
 {
@@ -40,11 +43,12 @@ public sealed record SecurityLimits
         MaxFileBytes > 0 && MaxFileBytes <= MaxExpandedBytes && MaxFiles > 0 &&
         MaxImageDimension > 0 && MaxAnimationFrames > 0;
 }
-public enum SettingsLoadStatus { Loaded, Created, RecoveredInvalid }
+public enum SettingsLoadStatus { Loaded, Created, RecoveredInvalid, Migrated }
 public sealed record SettingsLoadResult(AppSettings Settings, SettingsLoadStatus Status);
 public interface ISettingsService
 {
     AppSettings Current { get; }
     Task<SettingsLoadResult> LoadAsync(CancellationToken ct);
     Task SaveAsync(AppSettings settings, CancellationToken ct);
+    Task UpdateAsync(Func<AppSettings, AppSettings> update, CancellationToken ct);
 }

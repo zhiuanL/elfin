@@ -356,3 +356,13 @@ Codex 每次只处理一个 Phase，并输出：
 - 配置新于当前 schema 时拒绝降级；损坏配置保留原文件后恢复默认值。数据目录默认 Installed，--portable 明确选择便携数据根。
 - 网络请求重试遵守仓库指令：可重试失败等待 1/3/7/15 秒；HTTP 403 立即抛出且不重试。目前只有 SDK 准备脚本联网，应用启动不联网。
 - 已为上述跨模块契约同步建立单元与集成测试；细节及实际结果见 Phase-0-开发报告.md。
+
+## 21. Phase 1 实施契约注释（2026-08-27）
+
+- IWindowService 由 Phase 0 占位签名收敛为异步窗口生命周期契约；Show/Hide/Toggle/OpenControlCenter/CloseControlCenter/Exit 显式注册到 ICommandRegistry，未来输入源复用此入口，不直接调用 WPF 或 Win32。
+- IPetWindow / IControlCenterWindow / ITrayService / IDisplayService / IUiDispatcher 为 Application 平台端口；Windows 层实现 HWND、拖拽、工作区、DPI 与托盘。IDisplayTopologyService 的邻接、漫游等仍留待 Phase 4。
+- PetWindow 使用 220 DIP 的中性矢量占位，无角色包、语义动画或正式 Character Runtime。App 与 Window Code-Behind 仅承担框架接线；ApplicationHostController 管理宿主和异常边界。
+- Settings schema 2 新增 PetWindow（物理像素坐标、显示器标识、可见性、置顶）和 ControlCenterCloseBehavior；schema 1 迁移保留原有偏好。ISettingsService.UpdateAsync 在配置锁内读取最新快照并原子替换，窗口不得直接写 JSON 或 SQLite。
+- 恢复使用当前显示器 WorkingArea；负坐标合法，无效位置回到可见区域。原点不按 DPI 全局除法换算，尺寸由 DIP/DPI 得到物理像素。WPF 处理 WM_DPICHANGED，平台适配只在处理后通知应用校正，避免二次缩放。
+- 控制中心默认关闭即隐藏到托盘；PetWindow 的关闭请求映射 HidePet；Exit 保存状态、释放托盘、真正关闭窗口并停止宿主。保存失败仍执行清理，并通过现有异常边界报告。
+- 新增位置、DPI、生命周期、配置迁移、托盘命令接线及真实窗口/进程测试；Phase 0 测试全部保留。人工验收状态和环境限制见 Phase-1-开发报告.md。当前不进入 Phase 2。

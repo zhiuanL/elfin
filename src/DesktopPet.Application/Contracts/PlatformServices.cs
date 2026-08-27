@@ -5,8 +5,15 @@ namespace DesktopPet.Application.Contracts;
 public enum AppPage { Home, AI, Pomodoro, Reminders, Statistics, Characters, Settings }
 public interface IWindowService
 {
-    void ShowControlCenter(AppPage page);
-    void SetPetVisible(bool visible);
+    Task InitializeAsync(CancellationToken ct);
+    Task ShowPetAsync(CancellationToken ct);
+    Task HidePetAsync(CancellationToken ct);
+    Task TogglePetAsync(CancellationToken ct);
+    Task ShowControlCenterAsync(CancellationToken ct);
+    Task CloseControlCenterAsync(CancellationToken ct);
+    Task SavePositionAsync(CancellationToken ct);
+    Task ExitAsync(CancellationToken ct);
+    Task StopAsync(CancellationToken ct);
 }
 public interface IDisplayTopologyService
 {

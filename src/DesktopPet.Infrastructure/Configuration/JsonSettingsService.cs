@@ -45,6 +45,7 @@ public sealed class JsonSettingsService(IAppDataDirectories directories, IOption
                 return new(_current, SettingsLoadStatus.Created);
             }
             AppSettings? loaded;
+            var migrated = false;
             try
             {
                 await using var stream = File.OpenRead(SettingsPath);
@@ -56,6 +57,11 @@ public sealed class JsonSettingsService(IAppDataDirectories directories, IOption
                     schema.TryGetInt32(out var version) && version > AppSettings.CurrentSchemaVersion)
                     throw new UnsupportedSettingsVersionException(version);
                 loaded = document.RootElement.Deserialize<AppSettings>(_json);
+                if (loaded?.SchemaVersion == 1)
+                {
+                    loaded = loaded with { SchemaVersion = AppSettings.CurrentSchemaVersion };
+                    migrated = true;
+                }
                 if (loaded is null || !loaded.IsValid()) throw new JsonException("Invalid settings.");
             }
             catch (JsonException)
@@ -70,9 +76,10 @@ public sealed class JsonSettingsService(IAppDataDirectories directories, IOption
                 logger.Write(new(AppEvent.SettingsRecovered, timeProvider.GetUtcNow()));
                 return new(_current, SettingsLoadStatus.RecoveredInvalid);
             }
+            if (migrated) await WriteAtomicAsync(loaded, ct);
             _current = loaded;
             logger.Configure(_current.Logging);
-            return new(_current, SettingsLoadStatus.Loaded);
+            return new(_current, migrated ? SettingsLoadStatus.Migrated : SettingsLoadStatus.Loaded);
         }
         finally { _gate.Release(); }
     }
@@ -88,6 +95,22 @@ public sealed class JsonSettingsService(IAppDataDirectories directories, IOption
             await WriteAtomicAsync(settings, ct);
             _current = settings;
             logger.Configure(_current.Logging);
+        }
+        finally { _gate.Release(); }
+    }
+
+    public async Task UpdateAsync(Func<AppSettings, AppSettings> update, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(update);
+        await _gate.WaitAsync(ct);
+        try
+        {
+            var next = update(_current);
+            if (next is null || !next.IsValid()) throw new ArgumentException("Settings validation failed.", nameof(update));
+            directories.EnsureCreated();
+            await WriteAtomicAsync(next, ct);
+            _current = next;
+            logger.Configure(next.Logging);
         }
         finally { _gate.Release(); }
     }
