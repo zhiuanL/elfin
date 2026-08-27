@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="AppTitle" xml:space="preserve"><value>DesktopPet · Control Center</value></data>
+  <data name="BootstrapTitle" xml:space="preserve"><value>Phase 0</value></data>
+  <data name="BootstrapDescription" xml:space="preserve"><value>The application foundation is ready. Companion features will be added in later phases.</value></data>
+  <data name="OfflineReady" xml:space="preserve"><value>Local infrastructure is ready. No AI account or network connection is required.</value></data>
+  <data name="AiStorageUnavailable" xml:space="preserve"><value>AI storage is unavailable. Local core remains available.</value></data>
+  <data name="SettingsRecovered" xml:space="preserve"><value>Invalid settings were preserved and safe defaults restored.</value></data>
+  <data name="StartupError" xml:space="preserve"><value>Startup could not finish. Your data has been preserved. See the local logs and pre-migration backups before retrying.</value></data>
+  <data name="FatalError" xml:space="preserve"><value>The application encountered an unexpected error and must close.</value></data>
+  <data name="LogLocation" xml:space="preserve"><value>Logs</value></data>
+  <data name="BackupLocation" xml:space="preserve"><value>Backups</value></data>
+  <data name="Close" xml:space="preserve"><value>Close</value></data>
+</root>

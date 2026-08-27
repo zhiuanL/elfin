@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../DesktopPet.Domain/DesktopPet.Domain.csproj" />
+    <ProjectReference Include="../DesktopPet.CharacterSdk/DesktopPet.CharacterSdk.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+</Project>

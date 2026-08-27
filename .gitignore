@@ -46,3 +46,7 @@ appsettings.Development.local.json
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Repository-local SDK and NuGet cache
+.tools/
+.packages/

@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../DesktopPet.Application/DesktopPet.Application.csproj" />
+  </ItemGroup>
+</Project>

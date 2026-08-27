@@ -342,17 +342,3 @@ Codex 每次只处理一个 Phase，并输出：
 - Context 最近消息 N 值与摘要阈值。
 - Auto 性能模式的具体 FPS。
 这些统一放入策略/配置并在 Alpha 阶段调优，不改变架构。
-
-## 20. Phase 0 实施契约注释（2026-08-27）
-
-- 已按第 2 节创建 9 个项目。Domain 是本项目的 Core 边界；Application/Domain/CharacterSdk 不引用 AI、WPF、SQLite 或 Windows Adapter。
-- Phase 0 仅提供空控制中心和工程基础；未实现 Pet Window、托盘、角色渲染、行为、移动、办公业务、AI Provider 或 TTS。
-- 数据库 V1 migration 只建立各自的 SchemaMigrations 账本。业务表随对应 Phase 用新版本 migration 引入，禁止修改已经应用的迁移脚本。
-- IAppDataDirectories / ISettingsService / IDatabaseMigrator / IRecoveryCoordinator 分别负责目录、强类型配置、迁移和启动顺序；UI 不持有数据库连接。
-- IAppLogger 只接受枚举事件、UTC 时间、错误码、来源和关联 ID；Configure 接收已经校验的 LogOptions。异常正文、聊天、记忆与密钥不进入日志 API。
-- IAppLifetime 负责退出，ICommandRegistry 是仅接受显式注册命令的基础设施。Phase 0 关闭窗口即退出；Phase 1 有托盘后再实现默认 Hide to Tray，避免没有托盘时留下不可访问的后台进程。
-- IAnimationProvider、IChatModelProvider 沿用本规范签名。角色、运行时、办公、AI Tool、Voice、Win32 等其余契约当前为强类型骨架，不代表后续功能已实现，也不注册虚假可用 Provider。
-- app.db 迁移失败阻止启动；ai.db 迁移失败保持回滚并报告 AI 存储不可用，本地核心继续启动。此处“迁移失败停止启动”与“AI 故障不得影响核心”的冲突记录于 Phase 0 开发报告 Open Decisions；后续 AI 模块必须遵守不可用状态，不得绕过失败继续读写。
-- 配置新于当前 schema 时拒绝降级；损坏配置保留原文件后恢复默认值。数据目录默认 Installed，--portable 明确选择便携数据根。
-- 网络请求重试遵守仓库指令：可重试失败等待 1/3/7/15 秒；HTTP 403 立即抛出且不重试。目前只有 SDK 准备脚本联网，应用启动不联网。
-- 已为上述跨模块契约同步建立单元与集成测试；细节及实际结果见 Phase-0-开发报告.md。
