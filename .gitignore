@@ -1,0 +1,48 @@
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+
+# .NET
+bin/
+obj/
+TestResults/
+
+# Build / publish
+publish/
+artifacts/
+
+# Local application data
+data/
+Data/
+UserData/
+logs/
+Logs/
+cache/
+Cache/
+
+# SQLite runtime databases
+*.db
+*.db-shm
+*.db-wal
+
+# Secrets
+.env
+.env.*
+secrets.json
+appsettings.Local.json
+appsettings.Development.local.json
+
+# API keys / credentials
+*.key
+*.pem
+
+# Backup runtime files
+*.bak
+*.tmp
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
