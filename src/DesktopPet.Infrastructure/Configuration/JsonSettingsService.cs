@@ -57,7 +57,7 @@ public sealed class JsonSettingsService(IAppDataDirectories directories, IOption
                     schema.TryGetInt32(out var version) && version > AppSettings.CurrentSchemaVersion)
                     throw new UnsupportedSettingsVersionException(version);
                 loaded = document.RootElement.Deserialize<AppSettings>(_json);
-                if (loaded?.SchemaVersion == 1)
+                if (loaded?.SchemaVersion is 1 or 2)
                 {
                     loaded = loaded with { SchemaVersion = AppSettings.CurrentSchemaVersion };
                     migrated = true;

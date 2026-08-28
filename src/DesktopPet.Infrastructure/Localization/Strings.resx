@@ -3,8 +3,8 @@
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
   <data name="AppTitle" xml:space="preserve"><value>DesktopPet · Control Center</value></data>
-  <data name="BootstrapTitle" xml:space="preserve"><value>Phase 1</value></data>
-  <data name="BootstrapDescription" xml:space="preserve"><value>Window foundation is ready. Drag the placeholder to move it, double-click to open this center, or use its context menu and tray.</value></data>
+  <data name="BootstrapTitle" xml:space="preserve"><value>Phase 2</value></data>
+  <data name="BootstrapDescription" xml:space="preserve"><value>Character packages and PNG rendering are connected. Drag the pet to move it, double-click for this center. The tools below are Phase 2 developer diagnostics.</value></data>
   <data name="OfflineReady" xml:space="preserve"><value>Local infrastructure is ready. No AI account or network connection is required.</value></data>
   <data name="AiStorageUnavailable" xml:space="preserve"><value>AI storage is unavailable. Local core remains available.</value></data>
   <data name="SettingsRecovered" xml:space="preserve"><value>Invalid settings were preserved and safe defaults restored.</value></data>
@@ -18,7 +18,24 @@
   <data name="TogglePet" xml:space="preserve"><value>Toggle pet</value></data>
   <data name="OpenControlCenter" xml:space="preserve"><value>Open control center</value></data>
   <data name="ExitApplication" xml:space="preserve"><value>Exit application</value></data>
-  <data name="PetTitle" xml:space="preserve"><value>DesktopPet · Phase 1</value></data>
+  <data name="PetTitle" xml:space="preserve"><value>DesktopPet · Phase 2</value></data>
   <data name="PetHint" xml:space="preserve"><value>Drag to move · Double-click for control center · Right-click for menu</value></data>
   <data name="CommandFailed" xml:space="preserve"><value>Window operation or state save failed. Check local logs and retry before exiting.</value></data>
+  <data name="CharacterTools" xml:space="preserve"><value>Phase 2 · Character diagnostics</value></data>
+  <data name="CharacterSource" xml:space="preserve"><value>Choose a ZIP or character folder containing manifest.json, or paste its full path; then validate or import.</value></data>
+  <data name="CharacterRefresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="CharacterValidate" xml:space="preserve"><value>Validate</value></data>
+  <data name="CharacterImport" xml:space="preserve"><value>Import</value></data>
+  <data name="CharacterActivate" xml:space="preserve"><value>Activate</value></data>
+  <data name="CharacterRemove" xml:space="preserve"><value>Remove</value></data>
+  <data name="CharacterPlay" xml:space="preserve"><value>Play semantic</value></data>
+  <data name="CharacterAccepted" xml:space="preserve"><value>Validated (optional capabilities may degrade)</value></data>
+  <data name="CharacterRejected" xml:space="preserve"><value>Operation rejected; existing characters were not overwritten</value></data>
+  <data name="CharacterInvalidSemantic" xml:space="preserve"><value>Enter a semantic identifier such as idle / blink / happy / rest / talking.</value></data>
+  <data name="CharacterTargetTier" xml:space="preserve"><value>Target tier</value></data>
+  <data name="CharacterActualTier" xml:space="preserve"><value>Actual tier</value></data>
+  <data name="CharacterMissingCapabilities" xml:space="preserve"><value>Missing capabilities</value></data>
+  <data name="CharacterBrowseZip" xml:space="preserve"><value>Choose ZIP…</value></data>
+  <data name="CharacterBrowseFolder" xml:space="preserve"><value>Choose folder…</value></data>
+  <data name="CharacterZipFilter" xml:space="preserve"><value>Character ZIP packages (*.zip)|*.zip</value></data>
 </root>

@@ -1,5 +1,7 @@
 using System.IO;
 using DesktopPet.Application;
+using DesktopPet.Application.Characters;
+using DesktopPet.Infrastructure.Characters;
 using DesktopPet.Application.Configuration;
 using DesktopPet.Application.Contracts;
 using DesktopPet.Application.Storage;
@@ -34,6 +36,8 @@ public static class AppBootstrapper
             .ValidateOnStart();
         builder.Services.AddApplication().AddWindowApplication().AddInfrastructure(directories).AddWindowsPlatform();
         builder.Services.AddSingleton(lifetime);
+        builder.Services.AddSingleton<ICharacterSeedSource>(new DirectoryCharacterSeedSource(Path.Combine(AppContext.BaseDirectory, "DevelopmentCharacters")));
+        builder.Services.AddSingleton<CharacterToolsViewModel>();
         builder.Services.AddSingleton<MainWindowViewModel>();
         builder.Services.AddSingleton<MainWindow>();
         builder.Services.AddSingleton<PetWindowViewModel>();

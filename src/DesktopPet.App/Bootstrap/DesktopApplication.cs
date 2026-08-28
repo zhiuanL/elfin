@@ -1,4 +1,5 @@
 using DesktopPet.Application.Diagnostics;
+using DesktopPet.Application.Characters;
 using DesktopPet.Application.Contracts;
 using DesktopPet.Application.Localization;
 using DesktopPet.Application.Startup;
@@ -9,7 +10,8 @@ namespace DesktopPet.App.Bootstrap;
 
 public sealed class DesktopApplication(IRecoveryCoordinator recovery, MainWindow window, PetWindow petWindow,
     MainWindowViewModel viewModel, ITextLocalizer text, IAppLogger logger, TimeProvider timeProvider,
-    IWindowService windows, WindowEventBridge events)
+    IWindowService windows, WindowEventBridge events, CharacterPresentationService presentation,
+    CharacterToolsViewModel characterTools, IExceptionHandler exceptions)
 {
     private readonly TaskCompletionSource _rendered = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly TaskCompletionSource _petRendered = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -23,8 +25,11 @@ public sealed class DesktopApplication(IRecoveryCoordinator recovery, MainWindow
         System.Globalization.CultureInfo.CurrentCulture = text.Culture;
         System.Globalization.CultureInfo.CurrentUICulture = text.Culture;
         viewModel.Initialize(result);
+        await presentation.InitializeAsync(ct);
+        await characterTools.InitializeAsync();
         window.ContentRendered += OnRendered;
         petWindow.ContentRendered += OnPetRendered;
+        petWindow.IsVisibleChanged += OnPetVisibilityChanged;
         events.Attach();
         await windows.InitializeAsync(ct);
         logger.Write(new(AppEvent.Started, timeProvider.GetUtcNow()));
@@ -39,12 +44,19 @@ public sealed class DesktopApplication(IRecoveryCoordinator recovery, MainWindow
         petWindow.ContentRendered -= OnPetRendered;
         _petRendered.TrySetResult();
     }
-    public Task StopAsync(CancellationToken ct)
+    private async void OnPetVisibilityChanged(object sender, System.Windows.DependencyPropertyChangedEventArgs e)
+    {
+        try { await presentation.SetVisibleAsync(petWindow.IsVisible, CancellationToken.None); }
+        catch (Exception exception) { exceptions.Report(exception, ErrorCode.CommandFailed, ErrorOrigin.Command); }
+    }
+    public async Task StopAsync(CancellationToken ct)
     {
         logger.Write(new(AppEvent.Stopping, timeProvider.GetUtcNow()));
         window.ContentRendered -= OnRendered;
         petWindow.ContentRendered -= OnPetRendered;
+        petWindow.IsVisibleChanged -= OnPetVisibilityChanged;
         events.Dispose();
-        return windows.StopAsync(ct);
+        try { await characterTools.StopAsync(); await presentation.StopAsync(ct); }
+        finally { await windows.StopAsync(ct); }
     }
 }

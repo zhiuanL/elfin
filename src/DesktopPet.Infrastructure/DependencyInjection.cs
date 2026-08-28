@@ -1,4 +1,7 @@
 using DesktopPet.Application.Configuration;
+using DesktopPet.Application.Characters;
+using DesktopPet.CharacterSdk;
+using DesktopPet.Infrastructure.Characters;
 using DesktopPet.Application.Contracts;
 using DesktopPet.Application.Diagnostics;
 using DesktopPet.Application.Localization;
@@ -19,6 +22,8 @@ public static class DependencyInjection
         services.AddSingleton(directories);
         services.AddSingleton<IAppLogger, RollingFileAppLogger>();
         services.AddSingleton<ISettingsService, JsonSettingsService>();
+        services.AddSingleton<ICharacterPackageValidator, CharacterPackageValidator>();
+        services.AddSingleton<ICharacterPackageStore, FileCharacterPackageStore>();
         services.AddSingleton<ITextLocalizer, ResourceTextLocalizer>();
         services.AddSingleton<ISqliteConnectionFactory, SqliteConnectionFactory>();
         foreach (var migration in InitialMigrations.Create()) services.AddSingleton(migration);

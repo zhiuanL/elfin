@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "packageVersion": "1.0.0",
+  "minimumAppVersion": "0.2.0",
+  "id": "dev.elfin.standard",
+  "defaultLocale": "zh-CN",
+  "targetTier": "standard",
+  "assets": {
+    "preview": "preview.png",
+    "fallback": "fallback.png"
+  },
+  "animations": {
+    "idle": {
+      "type": "sequence",
+      "fps": 8,
+      "loop": true,
+      "frames": [
+        {
+          "path": "images/01.png",
+          "durationMs": 180
+        },
+        {
+          "path": "images/02.png",
+          "durationMs": 260
+        },
+        {
+          "path": "images/03.png",
+          "durationMs": 180
+        }
+      ]
+    },
+    "blink": {
+      "type": "static",
+      "path": "images/02.png",
+      "loop": false
+    },
+    "happy": {
+      "type": "sequence",
+      "path": "animations/happy",
+      "fps": 6,
+      "loop": false
+    },
+    "rest": {
+      "type": "static",
+      "path": "images/03.png",
+      "loop": true
+    }
+  },
+  "capabilities": {
+    "persona": true,
+    "dialogue": true,
+    "emotionMap": true
+  },
+  "locales": {
+    "zh-CN": {
+      "name": "开发测试 · 橙团子",
+      "description": "仅用于验证序列帧和 Standard 内容完整度；不执行行为或 AI。"
+    },
+    "en-US": {
+      "name": "Development · Amber",
+      "description": "Sequence and Standard content fixture; no behavior or AI runtime."
+    }
+  },
+  "isDevelopmentFixture": true,
+  "profiles": {
+    "persona": {
+      "zh-CN": "persona/zh-CN.json",
+      "en-US": "persona/en-US.json"
+    },
+    "dialogue": {
+      "zh-CN": "locales/zh-CN.json",
+      "en-US": "locales/en-US.json"
+    },
+    "emotionMap": "emotion.json"
+  }
+}

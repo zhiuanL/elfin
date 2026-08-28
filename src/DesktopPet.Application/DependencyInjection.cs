@@ -1,4 +1,5 @@
 using DesktopPet.Application.Commands;
+using DesktopPet.Application.Characters;
 using DesktopPet.Application.Contracts;
 using DesktopPet.Application.Windows;
 using DesktopPet.Application.Diagnostics;
@@ -15,6 +16,8 @@ public static class DependencyInjection
         services.AddSingleton<IExceptionHandler, ExceptionHandler>();
         services.AddSingleton<IRecoveryCoordinator, RecoveryCoordinator>();
         services.AddSingleton<ICommandRegistry, CommandRegistry>();
+        services.AddSingleton<ICharacterPackageService, CharacterManager>();
+        services.AddSingleton<CharacterPresentationService>();
         return services;
     }
 

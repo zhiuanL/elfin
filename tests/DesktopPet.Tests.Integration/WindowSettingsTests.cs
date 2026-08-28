@@ -20,7 +20,7 @@ public sealed class WindowSettingsTests
         using var service = Create(env);
         var loaded = await service.LoadAsync(default);
         Assert.Equal(SettingsLoadStatus.Migrated, loaded.Status);
-        Assert.Equal(2, loaded.Settings.SchemaVersion);
+        Assert.Equal(AppSettings.CurrentSchemaVersion, loaded.Settings.SchemaVersion);
         Assert.Equal("en-US", loaded.Settings.Culture);
         Assert.Equal(DesktopPet.Domain.Pets.PerformanceMode.PowerSaver, loaded.Settings.PerformanceMode);
         Assert.Equal(8192, loaded.Settings.Logging.MaxFileBytes);

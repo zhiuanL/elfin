@@ -366,3 +366,15 @@ Codex 每次只处理一个 Phase，并输出：
 - 恢复使用当前显示器 WorkingArea；负坐标合法，无效位置回到可见区域。原点不按 DPI 全局除法换算，尺寸由 DIP/DPI 得到物理像素。WPF 处理 WM_DPICHANGED，平台适配只在处理后通知应用校正，避免二次缩放。
 - 控制中心默认关闭即隐藏到托盘；PetWindow 的关闭请求映射 HidePet；Exit 保存状态、释放托盘、真正关闭窗口并停止宿主。保存失败仍执行清理，并通过现有异常边界报告。
 - 新增位置、DPI、生命周期、配置迁移、托盘命令接线及真实窗口/进程测试；Phase 0 测试全部保留。人工验收状态和环境限制见 Phase-1-开发报告.md。当前不进入 Phase 2。
+
+## 22. Phase 2 实施契约注释（2026-08-28）
+
+- Phase 1 的人工验收已由用户在本次任务中确认通过；保留历史报告，不追改当时的验证记录。本次只执行 Phase 2。
+- CharacterManifest 为作者输入，CharacterDefinition 为经过校验/帧归一化的模型，CharacterPackageMetadata 保存实际等级、完整度和缺失能力。JSON 标识字段沿用设计文档的 id，对应 CLR CharacterId；Schema 1 的可机读定义见 character-manifest.schema.json。
+- ICharacterPackageValidator 收敛为不依赖 IO 的强类型快照校验；ZIP/文件系统由 Infrastructure 的 ICharacterPackageStore 适配，PNG 全解码由 Windows 的 IPngInspector 完成。ICharacterPackageService 增加诊断结果、Discover/Import/Validate/Get；IAnimationProvider 保持原约定方法。
+- Profile 使用文档建议的 persona/{locale}.json、locales/{locale}.json、emotion.json、hitareas.json、behavior.json、voice.json，也允许 manifest.profiles 显式指定安全相对路径。该元数据只用于验证与等级计算，不激活后续 Runtime/AI/Voice 功能。
+- CharacterPresentationService 只管理单窗口的当前包、语义播放、切换与隐藏取消；IAnimationSurface 隔离 WPF BitmapSource。Static PNG 不产生持续定时器；序列按帧时长播放，非循环停留末帧。Fallback 统一处理作者兼容链、类别、idle、fallback 资源，长链和循环均有界。
+- 导入先在隔离 .stage-GUID 中有界复制/解压，完整校验后同卷原子移动；同 ID 拒绝覆盖，当前角色拒绝删除。导入操作有进程内锁和目录独占文件锁，但不等于全应用多实例互斥。
+- Settings schema 3 增加 ActiveCharacterId；schema 1/2 升级保留偏好与原文件备份。启动优先恢复有效选择，否则选有效已安装包；无有效安装时使用随构建分发的明确标注开发测试包。损坏同 ID 安装不被偷偷覆盖。
+- 本阶段未改数据库 Schema、Phase 1 坐标/DPI/拖拽/托盘实现，也未实现 Phase 3+。测试、人工验收限制及协议调优项见 Phase-2-开发报告.md。
+- 按用户后续要求增加 ICharacterPackagePicker 平台端口：Windows 原生 ZIP/文件夹选择器只返回路径，ViewModel 回填后仍经既有校验/导入服务；取消保留原路径，退出取消并关闭所属对话框。未扩展为正式角色管理页面。

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "packageVersion": "1.0.0",
+  "minimumAppVersion": "0.2.0",
+  "id": "dev.elfin.basic",
+  "defaultLocale": "zh-CN",
+  "targetTier": "basic",
+  "assets": {
+    "preview": "preview.png",
+    "fallback": "fallback.png"
+  },
+  "animations": {
+    "idle": {
+      "type": "static",
+      "path": "images/idle.png",
+      "loop": true
+    }
+  },
+  "capabilities": {},
+  "locales": {
+    "zh-CN": {
+      "name": "开发测试 · 蓝团子",
+      "description": "仅用于 Phase 2 验证的 Basic PNG 测试包，不是正式用户角色。"
+    },
+    "en-US": {
+      "name": "Development · Blue",
+      "description": "Basic PNG fixture for Phase 2 verification, not production character art."
+    }
+  },
+  "isDevelopmentFixture": true
+}

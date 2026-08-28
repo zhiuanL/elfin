@@ -1,4 +1,5 @@
 using DesktopPet.CharacterSdk;
+using DesktopPet.Application.Characters;
 using DesktopPet.Domain.Pets;
 using DesktopPet.Domain.Platform;
 using DesktopPet.Domain.Productivity;
@@ -34,10 +35,14 @@ public interface IMovementController
 }
 public interface ICharacterPackageService
 {
-    Task<CharacterPackage> InstallAsync(string archivePath, CancellationToken ct);
+    Task<CharacterDiscovery> DiscoverAsync(CancellationToken ct);
+    Task<ValidationResult> ValidateAsync(string sourcePath, CancellationToken ct);
+    Task<CharacterOperationResult> ImportAsync(string sourcePath, CancellationToken ct);
+    Task<CharacterOperationResult> InstallAsync(string sourcePath, CancellationToken ct);
     Task<IReadOnlyList<CharacterPackage>> ListAsync(CancellationToken ct);
-    Task RemoveAsync(CharacterId characterId, CancellationToken ct);
-    Task ActivateAsync(CharacterId characterId, CancellationToken ct);
+    Task<CharacterOperationResult> GetAsync(CharacterId characterId, CancellationToken ct);
+    Task<ValidationResult> RemoveAsync(CharacterId characterId, CancellationToken ct);
+    Task<CharacterOperationResult> ActivateAsync(CharacterId characterId, CancellationToken ct);
 }
 public sealed record PerformanceContext(bool IsVisible, SessionState Session, bool IsActive);
 public sealed record PerformanceBudget(int FramesPerSecond, TimeSpan BehaviorInterval);

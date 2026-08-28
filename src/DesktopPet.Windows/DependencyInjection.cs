@@ -1,4 +1,7 @@
 using DesktopPet.Application.Contracts;
+using DesktopPet.Application.Characters;
+using DesktopPet.CharacterSdk;
+using DesktopPet.Windows.Characters;
 using DesktopPet.Application.Windows;
 using DesktopPet.Windows.Security;
 using DesktopPet.Windows.Windowing;
@@ -13,6 +16,11 @@ public static class DependencyInjection
         services.AddSingleton<IDataProtectionService, DpapiDataProtectionService>();
         services.AddSingleton<IDisplayService, WindowsDisplayService>();
         services.AddSingleton<ITrayService, WindowsTrayService>();
+        services.AddSingleton<IPngInspector, WindowsPngInspector>();
+        services.AddSingleton<ICharacterPackagePicker, WindowsCharacterPackagePicker>();
+        services.AddSingleton<WpfAnimationSurface>();
+        services.AddSingleton<IAnimationSurface>(provider => provider.GetRequiredService<WpfAnimationSurface>());
+        services.AddSingleton<ICharacterImageSource>(provider => provider.GetRequiredService<WpfAnimationSurface>());
         return services;
     }
 }

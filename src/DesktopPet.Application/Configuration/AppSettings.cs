@@ -4,9 +4,10 @@ namespace DesktopPet.Application.Configuration;
 
 public sealed record AppSettings
 {
-    public const int CurrentSchemaVersion = 2;
+    public const int CurrentSchemaVersion = 3;
     public int SchemaVersion { get; init; } = CurrentSchemaVersion;
     public string Culture { get; init; } = "zh-CN";
+    public string? ActiveCharacterId { get; init; }
     public MovementMode MovementMode { get; init; } = MovementMode.Hybrid;
     public HybridMovementStrategy HybridStrategy { get; init; } = HybridMovementStrategy.SmartHybrid;
     public DisplayPolicy DisplayPolicy { get; init; } = DisplayPolicy.LockedCurrent;
@@ -30,16 +31,18 @@ public sealed record LogOptions
     public int RetainedFiles { get; init; } = 14;
     public bool IsValid() => MaxFileBytes is >= 1024 and <= 100 * 1024 * 1024 && RetainedFiles is >= 1 and <= 90;
 }
-// Initial conservative limits; the package validator is implemented in Phase 2.
+// Central limits shared by staging, validation and rendering.
 public sealed record SecurityLimits
 {
+    public long MaxManifestBytes { get; init; } = 512 * 1024;
     public long MaxArchiveBytes { get; init; } = 100 * 1024 * 1024;
     public long MaxExpandedBytes { get; init; } = 500 * 1024 * 1024;
     public long MaxFileBytes { get; init; } = 20 * 1024 * 1024;
     public int MaxFiles { get; init; } = 5000;
     public int MaxImageDimension { get; init; } = 4096;
     public int MaxAnimationFrames { get; init; } = 1000;
-    public bool IsValid() => MaxArchiveBytes > 0 && MaxExpandedBytes >= MaxArchiveBytes &&
+    public bool IsValid() => MaxManifestBytes > 0 && MaxManifestBytes <= MaxFileBytes &&
+        MaxArchiveBytes > 0 && MaxExpandedBytes >= MaxArchiveBytes &&
         MaxFileBytes > 0 && MaxFileBytes <= MaxExpandedBytes && MaxFiles > 0 &&
         MaxImageDimension > 0 && MaxAnimationFrames > 0;
 }
