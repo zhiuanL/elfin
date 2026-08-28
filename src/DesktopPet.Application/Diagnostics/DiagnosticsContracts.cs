@@ -1,15 +1,18 @@
 using DesktopPet.Application.Configuration;
+using DesktopPet.Domain.Pets;
 
 namespace DesktopPet.Application.Diagnostics;
 
-public enum AppEvent { Starting, Started, Stopping, MigrationApplied, SettingsRecovered, Failure }
+public enum AppEvent { Starting, Started, Stopping, MigrationApplied, SettingsRecovered, Failure,
+    BehaviorSelected, StateChanged, CharacterSwitched, SchedulerStarted, SchedulerStopped, EmotionChanged, DecisionFallback }
 public enum ErrorCode { StartupFailed, DatabaseMigrationFailed, AiStorageUnavailable, UnhandledException, CommandFailed }
 public enum ErrorOrigin { Startup, Dispatcher, AppDomain, BackgroundTask, Command, AiStorage }
 public sealed record AppFailure(ErrorCode Code, ErrorOrigin Origin, Guid CorrelationId, DateTimeOffset TimestampUtc);
 
 // No free-form text, exception messages, chat content, configuration or credentials enter this API.
 public sealed record AppLogEntry(AppEvent Event, DateTimeOffset TimestampUtc,
-    ErrorCode? ErrorCode = null, ErrorOrigin? Origin = null, Guid? CorrelationId = null);
+    ErrorCode? ErrorCode = null, ErrorOrigin? Origin = null, Guid? CorrelationId = null,
+    BehaviorId? Behavior = null, PetPrimaryState? State = null);
 public interface IAppLogger
 {
     void Configure(LogOptions options);

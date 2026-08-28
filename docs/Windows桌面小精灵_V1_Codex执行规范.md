@@ -378,3 +378,16 @@ Codex 每次只处理一个 Phase，并输出：
 - Settings schema 3 增加 ActiveCharacterId；schema 1/2 升级保留偏好与原文件备份。启动优先恢复有效选择，否则选有效已安装包；无有效安装时使用随构建分发的明确标注开发测试包。损坏同 ID 安装不被偷偷覆盖。
 - 本阶段未改数据库 Schema、Phase 1 坐标/DPI/拖拽/托盘实现，也未实现 Phase 3+。测试、人工验收限制及协议调优项见 Phase-2-开发报告.md。
 - 按用户后续要求增加 ICharacterPackagePicker 平台端口：Windows 原生 ZIP/文件夹选择器只返回路径，ViewModel 回填后仍经既有校验/导入服务；取消保留原路径，退出取消并关闭所属对话框。未扩展为正式角色管理页面。
+
+## 23. Phase 3 实施契约注释（2026-08-28）
+
+- Phase 2 人工验收已由用户确认通过；保留历史报告记录。本次只实现 Phase 3，本阶段验收状态见 Phase-3-开发报告.md。
+- PetHost 持有一个实例化 PetRuntime；运行时拥有 State/Emotion/RecentMemory/Scheduler。Domain 的语义状态与 Utility 不引用 WPF/IO/AI；Application 编排，Windows 仅将点击/拖拽转换为 IPetInteractionSource 事件。
+- 状态沿用 Primary/Transient，BehaviorId 与实际 AnimationSemantic 分开记录；fallback 后实际状态同步，完成回到 Idle。Talking 仅为状态/语义入口，没有语音或 AI。
+- ICharacterPresentation 的运行时门面统一串行化角色切换与开发播放请求；IBehaviorAnimationPlayer 适配既有 PNG Provider，提供播放完成、时间预算、实际 fallback 语义和取消。隐藏/切换/退出先取消并等待旧调度及旧动画，再变更角色/可见性。
+- BehaviorDefinition/RuntimePolicy 集中定义持续时间、冷却、权重与情绪修正。Utility 先过滤再加权抽样；RecentMemory 仅驻内存，最多 64 条/2 分钟，保留每行为独立冷却时间。TimeProvider 与 IRandomSource 可替换，不使用高频轮询。
+- Schema 1 的 behavior.json 消费动画语义对应的 weight/cooldownSeconds；emotion.json 消费已验证语义映射，不发明数值情绪倾向字段。系统安全 Clamp > 用户覆盖 > 角色推荐 > 引擎默认；Idle 不允许禁用或重映射。
+- Settings schema 4 增加 Runtime 行为覆盖和按角色 EmotionCheckpoint，旧 schema 1/2/3 迁移保留偏好与备份。Mood/Energy/Affinity 每 2 分钟及隐藏/切换/退出保存；Boredom/播放帧/冷却不跨启动恢复，未修改双库或写入 ai.db。
+- 原生拖动和双击控制中心保持 Phase 1 入口；按下暂停行为，拖动结束恢复，无位移释放计为单击，500ms 防抖避免高频情绪叠加。生命周期/指针接管为强制取消边界，普通状态切换遵守优先级、最短持续时间及可中断性。
+- 默认无有效选择时优先动作较完整的已安装包，已有选择不变；Basic 缺失能力被过滤。生产行为事件按种类至少间隔 10 秒，诊断页面显示上次决策快照，不为每帧记录日志。
+- 无自主位移、全屏/前台识别、锁屏/电源策略、办公业务、AI/TTS、成长或多角色并行。后续修改这些契约必须同步测试与本注释。

@@ -5,12 +5,13 @@ using DesktopPet.Application.Localization;
 using DesktopPet.Application.Startup;
 using DesktopPet.App.ViewModels;
 using DesktopPet.App.Views;
+using DesktopPet.Application.Runtime;
 
 namespace DesktopPet.App.Bootstrap;
 
 public sealed class DesktopApplication(IRecoveryCoordinator recovery, MainWindow window, PetWindow petWindow,
     MainWindowViewModel viewModel, ITextLocalizer text, IAppLogger logger, TimeProvider timeProvider,
-    IWindowService windows, WindowEventBridge events, CharacterPresentationService presentation,
+    IWindowService windows, WindowEventBridge events, PetHost pets,
     CharacterToolsViewModel characterTools, IExceptionHandler exceptions)
 {
     private readonly TaskCompletionSource _rendered = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -25,7 +26,7 @@ public sealed class DesktopApplication(IRecoveryCoordinator recovery, MainWindow
         System.Globalization.CultureInfo.CurrentCulture = text.Culture;
         System.Globalization.CultureInfo.CurrentUICulture = text.Culture;
         viewModel.Initialize(result);
-        await presentation.InitializeAsync(ct);
+        await pets.Runtime.StartAsync(ct);
         await characterTools.InitializeAsync();
         window.ContentRendered += OnRendered;
         petWindow.ContentRendered += OnPetRendered;
@@ -46,7 +47,7 @@ public sealed class DesktopApplication(IRecoveryCoordinator recovery, MainWindow
     }
     private async void OnPetVisibilityChanged(object sender, System.Windows.DependencyPropertyChangedEventArgs e)
     {
-        try { await presentation.SetVisibleAsync(petWindow.IsVisible, CancellationToken.None); }
+        try { await pets.Runtime.SetVisibleAsync(petWindow.IsVisible, CancellationToken.None); }
         catch (Exception exception) { exceptions.Report(exception, ErrorCode.CommandFailed, ErrorOrigin.Command); }
     }
     public async Task StopAsync(CancellationToken ct)
@@ -56,7 +57,7 @@ public sealed class DesktopApplication(IRecoveryCoordinator recovery, MainWindow
         petWindow.ContentRendered -= OnPetRendered;
         petWindow.IsVisibleChanged -= OnPetVisibilityChanged;
         events.Dispose();
-        try { await characterTools.StopAsync(); await presentation.StopAsync(ct); }
+        try { await characterTools.StopAsync(); await pets.Runtime.StopAsync(ct); }
         finally { await windows.StopAsync(ct); }
     }
 }

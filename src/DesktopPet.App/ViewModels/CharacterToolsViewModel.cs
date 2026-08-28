@@ -5,6 +5,7 @@ using DesktopPet.Application.Diagnostics;
 using DesktopPet.Application.Localization;
 using DesktopPet.CharacterSdk;
 using DesktopPet.Domain.Pets;
+using DesktopPet.Application.Runtime;
 
 namespace DesktopPet.App.ViewModels;
 
@@ -12,7 +13,7 @@ public sealed record CharacterListItem(CharacterId Id, string DisplayName);
 public sealed class CharacterToolsViewModel : ObservableViewModel, IDisposable
 {
     private readonly ICharacterPackageService _characters;
-    private readonly CharacterPresentationService _presentation;
+    private readonly ICharacterPresentation _presentation;
     private readonly ITextLocalizer _text;
     private readonly IExceptionHandler _exceptions;
     private readonly ICharacterPackagePicker _picker;
@@ -21,7 +22,7 @@ public sealed class CharacterToolsViewModel : ObservableViewModel, IDisposable
     private readonly AsyncActionCommand[] _commands;
     private string _diagnostics = string.Empty;
     private string _sourcePath = string.Empty;
-    public CharacterToolsViewModel(ICharacterPackageService characters, CharacterPresentationService presentation, ITextLocalizer text,
+    public CharacterToolsViewModel(ICharacterPackageService characters, ICharacterPresentation presentation, ITextLocalizer text,
         IExceptionHandler exceptions, ICharacterPackagePicker picker)
     {
         _characters = characters; _presentation = presentation; _text = text; _exceptions = exceptions;

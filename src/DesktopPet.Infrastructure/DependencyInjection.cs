@@ -12,6 +12,7 @@ using DesktopPet.Infrastructure.Localization;
 using DesktopPet.Infrastructure.Persistence;
 using DesktopPet.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
+using DesktopPet.Application.Runtime;
 
 namespace DesktopPet.Infrastructure;
 
@@ -24,6 +25,7 @@ public static class DependencyInjection
         services.AddSingleton<ISettingsService, JsonSettingsService>();
         services.AddSingleton<ICharacterPackageValidator, CharacterPackageValidator>();
         services.AddSingleton<ICharacterPackageStore, FileCharacterPackageStore>();
+        services.AddSingleton<ICharacterBehaviorProfileReader, CharacterBehaviorProfileReader>();
         services.AddSingleton<ITextLocalizer, ResourceTextLocalizer>();
         services.AddSingleton<ISqliteConnectionFactory, SqliteConnectionFactory>();
         foreach (var migration in InitialMigrations.Create()) services.AddSingleton(migration);

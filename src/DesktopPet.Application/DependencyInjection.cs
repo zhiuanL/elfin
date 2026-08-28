@@ -5,6 +5,8 @@ using DesktopPet.Application.Windows;
 using DesktopPet.Application.Diagnostics;
 using DesktopPet.Application.Startup;
 using Microsoft.Extensions.DependencyInjection;
+using DesktopPet.Application.Runtime;
+using DesktopPet.Domain.Pets;
 
 namespace DesktopPet.Application;
 
@@ -18,6 +20,12 @@ public static class DependencyInjection
         services.AddSingleton<ICommandRegistry, CommandRegistry>();
         services.AddSingleton<ICharacterPackageService, CharacterManager>();
         services.AddSingleton<CharacterPresentationService>();
+        services.AddSingleton<RuntimePolicy>();
+        services.AddTransient<IRandomSource>(_ => new SeededRandomSource(System.Security.Cryptography.RandomNumberGenerator.GetInt32(int.MaxValue)));
+        services.AddTransient<PetRuntime>();
+        services.AddSingleton<PetHost>();
+        services.AddSingleton<IPetHost>(provider => provider.GetRequiredService<PetHost>());
+        services.AddSingleton<ICharacterPresentation>(provider => provider.GetRequiredService<PetHost>().Runtime);
         return services;
     }
 

@@ -85,6 +85,21 @@ public sealed class StartupSmokeTests
     private static string ReadLogs(TestEnvironment env) =>
         string.Join("\n", Directory.GetFiles(env.Directories.Logs, "*.jsonl").Select(File.ReadAllText));
 
+    [Theory]
+    [InlineData("-1")]
+    [InlineData("301")]
+    [InlineData("not-a-number")]
+    public void BoundedSoakRejectsInvalidDurations(string duration) =>
+        Assert.Throws<ArgumentException>(() => StartupOptions.Parse(["--smoke-test", "--data-root", "C:\\isolated", "--smoke-duration-seconds", duration]));
+
+    [Fact]
+    public void BoundedSoakRequiresIsolationAndKeepsOriginalSmokeDefault()
+    {
+        Assert.Throws<ArgumentException>(() => StartupOptions.Parse(["--smoke-duration-seconds", "180"]));
+        Assert.Equal(0, StartupOptions.Parse(["--smoke-test", "--data-root", "C:\\isolated"]).SmokeDurationSeconds);
+        Assert.Equal(180, StartupOptions.Parse(["--smoke-test", "--data-root", "C:\\isolated", "--smoke-duration-seconds", "180"]).SmokeDurationSeconds);
+    }
+
     private static async Task<int> RunApp(TestEnvironment env)
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

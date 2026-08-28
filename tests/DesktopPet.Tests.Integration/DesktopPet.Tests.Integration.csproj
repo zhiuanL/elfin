@@ -7,6 +7,7 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../Shared/ManualTimeProvider.cs" Link="ManualTimeProvider.cs" />
     <ProjectReference Include="../../src/DesktopPet.App/DesktopPet.App.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />

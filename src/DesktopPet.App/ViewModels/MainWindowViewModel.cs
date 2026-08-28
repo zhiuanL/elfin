@@ -12,9 +12,10 @@ public sealed class MainWindowViewModel : ObservableViewModel
     private readonly ITextLocalizer _text;
     private StartupResult? _startup;
     private bool _commandFailed;
-    public MainWindowViewModel(ITextLocalizer text, CharacterToolsViewModel? characterTools = null)
+    public MainWindowViewModel(ITextLocalizer text, CharacterToolsViewModel? characterTools = null, RuntimeDiagnosticsViewModel? runtime = null)
     {
         CharacterTools = characterTools;
+        Runtime = runtime;
         _text = text;
         CloseCommand = CreateCommand(CommandId.CloseControlCenter);
         ShowCommand = CreateCommand(CommandId.ShowPet);
@@ -24,6 +25,7 @@ public sealed class MainWindowViewModel : ObservableViewModel
     }
     public string Title => _text.Get(TextKey.AppTitle);
     public CharacterToolsViewModel? CharacterTools { get; }
+    public RuntimeDiagnosticsViewModel? Runtime { get; }
     public string Heading => _text.Get(TextKey.BootstrapTitle);
     public string Description => _text.Get(TextKey.BootstrapDescription);
     public string Status => _text.Get(TextKey.OfflineReady);

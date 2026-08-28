@@ -3,12 +3,13 @@ using DesktopPet.Application.Contracts;
 using DesktopPet.Application.Diagnostics;
 using DesktopPet.CharacterSdk;
 using DesktopPet.Domain.Pets;
+using DesktopPet.Application.Runtime;
 
 namespace DesktopPet.Application.Characters;
 
 // A single window's presentation coordinator, NOT a behavior runtime or global pet state.
 public sealed class CharacterPresentationService(ICharacterPackageService characters, ICharacterSeedSource seeds,
-    ISettingsService settings, IAnimationSurface surface, IExceptionHandler exceptions, TimeProvider clock) : IDisposable
+    ISettingsService settings, IAnimationSurface surface, IExceptionHandler exceptions, TimeProvider clock) : IDisposable, ICharacterPresentation, IBehaviorAnimationPlayer
 {
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly AnimationResolver _resolver = new();
@@ -20,7 +21,7 @@ public sealed class CharacterPresentationService(ICharacterPackageService charac
     public CharacterPackage? Current { get; private set; }
     public event EventHandler? Changed;
 
-    public async Task InitializeAsync(CancellationToken ct)
+    public async Task InitializeAsync(CancellationToken ct, bool preferBehaviorReady = false)
     {
         _visible = settings.Current.PetWindow.IsVisible;
         var available = await characters.ListAsync(ct);
@@ -29,7 +30,8 @@ public sealed class CharacterPresentationService(ICharacterPackageService charac
             foreach (var path in seeds.GetDirectories()) await characters.ImportAsync(path, ct);
             available = await characters.ListAsync(ct);
         }
-        var chosen = available.FirstOrDefault(package => package.Definition.Id.Value == settings.Current.ActiveCharacterId) ?? available.FirstOrDefault();
+        var chosen = available.FirstOrDefault(package => package.Definition.Id.Value == settings.Current.ActiveCharacterId) ??
+            (preferBehaviorReady ? available.OrderByDescending(package => package.Definition.Animations.Count).FirstOrDefault() : available.FirstOrDefault());
         if (chosen is not null) { await ActivateAsync(chosen.Definition.Id, ct); return; }
         // Corrupted user installations must not prevent a validated shipped fallback from displaying.
         foreach (var path in seeds.GetDirectories())
@@ -77,6 +79,42 @@ public sealed class CharacterPresentationService(ICharacterPackageService charac
             if (_stopped || Current is null) return;
             await StopPlaybackAsync();
             await BeginAsync(semantic, ct);
+        }
+        finally { _gate.Release(); }
+    }
+    public async Task PlayBehaviorAsync(AnimationSemantic semantic, TimeSpan minimum, TimeSpan maximum, bool repeat,
+        Action<AnimationSemantic> resolved, CancellationToken ct)
+    {
+        if (minimum <= TimeSpan.Zero || maximum < minimum || maximum > TimeSpan.FromMinutes(1))
+            throw new ArgumentOutOfRangeException(nameof(maximum));
+        await _gate.WaitAsync(ct);
+        try
+        {
+            if (_stopped || !_visible || Current is null) { ct.ThrowIfCancellationRequested(); return; }
+            await StopPlaybackAsync();
+            using var deadline = new CancellationTokenSource(maximum, clock);
+            using var active = CancellationTokenSource.CreateLinkedTokenSource(ct, deadline.Token);
+            var started = clock.GetTimestamp();
+            foreach (var candidate in _resolver.Candidates(Current.Definition, semantic))
+            {
+                try
+                {
+                    IAnimationProvider provider = candidate.Definition.Type == AnimationFormat.StaticPng
+                        ? new StaticPngAnimationProvider(surface, clock) : new PngSequenceAnimationProvider(surface, clock);
+                    await provider.PreloadAsync(candidate.Definition, active.Token);
+                    ct.ThrowIfCancellationRequested();
+                    resolved(candidate.Semantic);
+                    try { await provider.PlayAsync(new(_instance, candidate.Semantic, repeat), active.Token); }
+                    catch (OperationCanceledException) when (!ct.IsCancellationRequested && deadline.IsCancellationRequested) { }
+                    ct.ThrowIfCancellationRequested();
+                    var remaining = minimum - clock.GetElapsedTime(started);
+                    if (remaining > TimeSpan.Zero) await Task.Delay(remaining, clock, ct);
+                    return;
+                }
+                catch (CharacterAssetException e) { exceptions.Report(e, ErrorCode.CommandFailed, ErrorOrigin.BackgroundTask); }
+                catch (OperationCanceledException) when (!ct.IsCancellationRequested && deadline.IsCancellationRequested) { return; }
+            }
+            throw new CharacterAssetException("Every behavior animation fallback is unavailable.");
         }
         finally { _gate.Release(); }
     }

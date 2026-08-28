@@ -42,6 +42,10 @@
           <TextBox Text="{Binding Diagnostics, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" Height="140" VerticalScrollBarVisibility="Auto" />
         </StackPanel>
       </GroupBox>
+      <GroupBox DataContext="{Binding Runtime}" Header="{Binding Heading}" Margin="0,8,0,0">
+        <TextBox Text="{Binding Details, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"
+                 Height="170" VerticalScrollBarVisibility="Auto" Margin="8" />
+      </GroupBox>
     </StackPanel>
     </ScrollViewer>
     <WrapPanel Grid.Row="3" HorizontalAlignment="Right">

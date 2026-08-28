@@ -8,7 +8,8 @@ public enum TextKey { AppTitle, BootstrapTitle, BootstrapDescription, OfflineRea
     CharacterTools, CharacterSource, CharacterRefresh, CharacterValidate, CharacterImport, CharacterActivate,
     CharacterRemove, CharacterPlay, CharacterAccepted, CharacterRejected, CharacterInvalidSemantic,
     CharacterTargetTier, CharacterActualTier, CharacterMissingCapabilities,
-    CharacterBrowseZip, CharacterBrowseFolder, CharacterZipFilter }
+    CharacterBrowseZip, CharacterBrowseFolder, CharacterZipFilter,
+    RuntimeDiagnostics, RuntimeSummary, RuntimeScore, RuntimeRecent }
 public interface ITextLocalizer
 {
     CultureInfo Culture { get; }

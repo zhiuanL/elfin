@@ -6,11 +6,12 @@ using System.Windows.Threading;
 using DesktopPet.Application.Commands;
 using DesktopPet.Application.Windows;
 using DesktopPet.Domain.Platform;
+using DesktopPet.Application.Runtime;
 using DpiScale = DesktopPet.Domain.Platform.DpiScale;
 
 namespace DesktopPet.Windows.Windowing;
 
-public sealed class WindowsPetWindow : IPetWindow
+public sealed class WindowsPetWindow : IPetWindow, IPetInteractionSource
 {
     private readonly Window _window;
     private HwndSource? _source;
@@ -29,6 +30,7 @@ public sealed class WindowsPetWindow : IPetWindow
     public DpiScale Dpi => NativeDesktop.GetDpi(Handle);
     private nint Handle { get { EnsureCreated(); return _handle; } }
     public event EventHandler? DragCompleted;
+    public event EventHandler<PetInteractionEventArgs>? Interaction;
     public event EventHandler? DisplayMetricsChanged;
     public event EventHandler<WindowCommandEventArgs>? CommandRequested;
     public event EventHandler<ContextMenuRequestEventArgs>? ContextMenuRequested;
@@ -61,12 +63,19 @@ public sealed class WindowsPetWindow : IPetWindow
             return;
         }
         if (e.ButtonState != MouseButtonState.Pressed) return;
+        var before = Bounds;
+        Interaction?.Invoke(this, new(PetInteractionKind.PointerPressed));
         _dragging = true;
         try { _window.DragMove(); }
         // The button can be released between receiving the message and entering the native move loop.
         catch (InvalidOperationException) when (Mouse.LeftButton == MouseButtonState.Released) { }
         finally { _dragging = false; }
-        if (!_closed) DragCompleted?.Invoke(this, EventArgs.Empty);
+        if (!_closed)
+        {
+            var after = Bounds;
+            Interaction?.Invoke(this, new(before.X == after.X && before.Y == after.Y ? PetInteractionKind.Click : PetInteractionKind.DragEnded));
+            DragCompleted?.Invoke(this, EventArgs.Empty);
+        }
     }
     private void OnRightClick(object sender, MouseButtonEventArgs e)
     {

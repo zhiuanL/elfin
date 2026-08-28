@@ -6,6 +6,10 @@ using DesktopPet.App.Bootstrap;
 using DesktopPet.App.ViewModels;
 using DesktopPet.Domain.Platform;
 using DesktopPet.Infrastructure.Localization;
+using DesktopPet.Application.Characters;
+using DesktopPet.Application.Runtime;
+using DesktopPet.Infrastructure.Characters;
+using DesktopPet.Domain.Pets;
 
 namespace DesktopPet.Tests.Integration;
 
@@ -23,7 +27,12 @@ public sealed class WindowEventBridgeTests
         var commands = new CommandRegistry(new[] { CommandId.ShowPet, CommandId.HidePet, CommandId.OpenControlCenter,
             CommandId.Exit, CommandId.TogglePetVisibility, CommandId.CloseControlCenter }.Select(id => new RecordingCommand(id, calls)));
         var windows = new RecordingWindows();
-        using var bridge = new WindowEventBridge(pet, control, tray, model, commands, windows, new ExceptionHandler(env.Logger, TimeProvider.System));
+        using var characters = new CharacterTestContext();
+        using var presentation = new CharacterPresentationService(characters.Manager, new DirectoryCharacterSeedSource(CharacterTestContext.FixtureRoot),
+            characters.Settings, new NullSurface(), characters.Exceptions, TimeProvider.System);
+        using var runtime = new PetRuntime(presentation, characters.Settings, new CharacterBehaviorProfileReader(characters.Settings, characters.Exceptions),
+            TimeProvider.System, new(), new SeededRandomSource(1), characters.Exceptions, env.Logger);
+        using var bridge = new WindowEventBridge(pet, control, tray, model, commands, windows, new ExceptionHandler(env.Logger, TimeProvider.System), new PetHost(runtime));
         bridge.Attach();
         bridge.Attach();
         foreach (var item in TrayMenuDefinition.Create()) tray.EmitCommand(item.Command);
@@ -52,6 +61,13 @@ public sealed class WindowEventBridgeTests
             calls.Add(id);
             return Task.FromResult(new CommandResult(CommandStatus.Completed));
         }
+    }
+    private sealed class NullSurface : IAnimationSurface
+    {
+        public Task SetPackageAsync(DesktopPet.CharacterSdk.CharacterPackage package, CancellationToken ct) => Task.CompletedTask;
+        public Task PreloadAsync(string path, CancellationToken ct) => Task.CompletedTask;
+        public Task PresentAsync(string path, CancellationToken ct) => Task.CompletedTask;
+        public Task ClearAsync(CancellationToken ct) => Task.CompletedTask;
     }
     private sealed class RecordingWindows : IWindowService
     {

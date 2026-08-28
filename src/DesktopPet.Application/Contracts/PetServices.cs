@@ -19,10 +19,9 @@ public interface IPetHost
 }
 public sealed record EnvironmentContext(TimeOnly LocalTime, TimeSpan UserIdleDuration,
     PomodoroPhase? PomodoroPhase, ForegroundWindowState ForegroundWindow, SessionState Session);
-public sealed record BehaviorDecision(AnimationSemantic Semantic, BehaviorPriority Priority);
 public interface IBehaviorDecisionEngine
 {
-    BehaviorDecision Decide(PetSnapshot pet, EnvironmentContext context);
+    BehaviorDecision Decide(BehaviorContext context, IReadOnlyList<BehaviorDefinition> behaviors);
 }
 public interface IEmotionService
 {

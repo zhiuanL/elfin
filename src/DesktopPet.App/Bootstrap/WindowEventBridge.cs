@@ -3,12 +3,13 @@ using DesktopPet.Application.Contracts;
 using DesktopPet.Application.Diagnostics;
 using DesktopPet.Application.Windows;
 using DesktopPet.App.ViewModels;
+using DesktopPet.Application.Runtime;
 
 namespace DesktopPet.App.Bootstrap;
 
 /// <summary>Async UI event boundary; the same registry can serve future input sources.</summary>
 public sealed class WindowEventBridge(IPetWindow pet, IControlCenterWindow control, ITrayService tray,
-    MainWindowViewModel viewModel, ICommandRegistry commands, IWindowService windows, IExceptionHandler exceptions) : IDisposable
+    MainWindowViewModel viewModel, ICommandRegistry commands, IWindowService windows, IExceptionHandler exceptions, PetHost pets) : IDisposable
 {
     private readonly CancellationTokenSource _events = new();
     private bool _attached, _disposed;
@@ -23,7 +24,10 @@ public sealed class WindowEventBridge(IPetWindow pet, IControlCenterWindow contr
         pet.DragCompleted += OnPositionChanged;
         pet.DisplayMetricsChanged += OnPositionChanged;
         pet.ContextMenuRequested += OnContextMenu;
+        if (pet is IPetInteractionSource source) source.Interaction += OnInteraction;
     }
+    private async void OnInteraction(object? sender, PetInteractionEventArgs e) =>
+        await AtBoundaryAsync(() => pets.Runtime.InteractAsync(e.Kind, _events.Token));
     private async void OnCommand(object? sender, WindowCommandEventArgs e) =>
         await AtBoundaryAsync(async () => { await commands.ExecuteAsync(e.Command, _events.Token); });
     private async void OnPositionChanged(object? sender, EventArgs e) =>
@@ -54,6 +58,7 @@ public sealed class WindowEventBridge(IPetWindow pet, IControlCenterWindow contr
         pet.DragCompleted -= OnPositionChanged;
         pet.DisplayMetricsChanged -= OnPositionChanged;
         pet.ContextMenuRequested -= OnContextMenu;
+        if (pet is IPetInteractionSource source) source.Interaction -= OnInteraction;
         _events.Dispose();
     }
 }

@@ -43,6 +43,8 @@ public sealed class ApplicationHostController(System.Windows.Application app) : 
             if (_smokeTest)
             {
                 await _desktop.WaitForRenderAsync(_lifetime.Token);
+                if (options.SmokeDurationSeconds > 0)
+                    await Task.Delay(TimeSpan.FromSeconds(options.SmokeDurationSeconds), _lifetime.Token);
                 RequestShutdown();
             }
         }
