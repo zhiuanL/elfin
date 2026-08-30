@@ -39,6 +39,7 @@ public static class AppBootstrapper
         builder.Services.AddSingleton<ICharacterSeedSource>(new DirectoryCharacterSeedSource(Path.Combine(AppContext.BaseDirectory, "DevelopmentCharacters")));
         builder.Services.AddSingleton<CharacterToolsViewModel>();
         builder.Services.AddSingleton<RuntimeDiagnosticsViewModel>();
+        builder.Services.AddSingleton<MovementToolsViewModel>();
         builder.Services.AddSingleton<MainWindowViewModel>();
         builder.Services.AddSingleton<MainWindow>();
         builder.Services.AddSingleton<PetWindowViewModel>();

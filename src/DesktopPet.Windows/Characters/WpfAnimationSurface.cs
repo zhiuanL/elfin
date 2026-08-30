@@ -6,12 +6,13 @@ using DesktopPet.Application.Characters;
 using DesktopPet.Application.Configuration;
 using DesktopPet.Application.Windows;
 using DesktopPet.CharacterSdk;
+using DesktopPet.Application.Movement;
 
 namespace DesktopPet.Windows.Characters;
 
-public interface ICharacterImageSource : INotifyPropertyChanged { BitmapSource? Frame { get; } }
+public interface ICharacterImageSource : INotifyPropertyChanged { BitmapSource? Frame { get; } double ScaleX => 1; }
 public sealed class WpfAnimationSurface(IUiDispatcher dispatcher, ISettingsService settings, IPngInspector inspector)
-    : IAnimationSurface, ICharacterImageSource
+    : IAnimationSurface, ICharacterImageSource, ICharacterVisualSurface
 {
     public const long CacheLimitBytes = 64 * 1024 * 1024;
     private readonly Dictionary<string, BitmapSource> _cache = new(StringComparer.Ordinal);
@@ -19,11 +20,20 @@ public sealed class WpfAnimationSurface(IUiDispatcher dispatcher, ISettingsServi
     private string? _root;
     private long _bytes;
     public BitmapSource? Frame { get; private set; }
+    public double ScaleX { get; private set; } = 1;
+    public Task SetMirroredAsync(bool mirrored, CancellationToken ct) => dispatcher.InvokeAsync(() =>
+    {
+        ScaleX = mirrored ? -1 : 1;
+        PropertyChanged?.Invoke(this, new(nameof(ScaleX)));
+        return Task.CompletedTask;
+    }, ct);
     public long CachedBytes => _bytes;
     public event PropertyChangedEventHandler? PropertyChanged;
     public Task SetPackageAsync(CharacterPackage package, CancellationToken ct) => dispatcher.InvokeAsync(() =>
     {
         _root = package.InstalledDirectory;
+        ScaleX = 1;
+        PropertyChanged?.Invoke(this, new(nameof(ScaleX)));
         ClearCache();
         return Task.CompletedTask;
     }, ct);

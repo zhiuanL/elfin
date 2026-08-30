@@ -33,6 +33,16 @@ public sealed class CharacterPackageValidator : ICharacterPackageValidator
             manifest.Profiles is null || manifest.Profiles.Persona is null || manifest.Profiles.Dialogue is null)
             return ValidationResult.Reject(CharacterErrorCode.InvalidJson, "manifest.json", "Required sections cannot be null.");
         manifest = manifest with { Profiles = ResolveProfiles(manifest.Profiles, content.Resources) };
+        if (manifest.VisualAnchor is { IsValid: false })
+            Fatal(CharacterErrorCode.InvalidJson, "$.visualAnchor", "Normalized anchor must be within 0..1.");
+        if (manifest.Movement is { } motion)
+        {
+            var values = new[] { motion.Speed, motion.Acceleration, motion.Deceleration, motion.PauseProbability,
+                motion.MovementIntervalSeconds, motion.WanderRadius };
+            if (values.Any(value => value is not null && !double.IsFinite(value.Value)) ||
+                (motion.Easing is not null && !Enum.IsDefined(motion.Easing.Value)))
+                Fatal(CharacterErrorCode.InvalidProfile, "$.movement", "Movement recommendations must be finite and typed.");
+        }
         if (manifest.DefaultLocale is not ("zh-CN" or "en-US")) Fatal(CharacterErrorCode.InvalidJson, "$.defaultLocale", "Unsupported default locale.");
         foreach (var (locale, text) in manifest.Locales)
             if (locale is not ("zh-CN" or "en-US") || text is null || string.IsNullOrWhiteSpace(text.Name) ||

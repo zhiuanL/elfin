@@ -1,12 +1,13 @@
 using DesktopPet.Application.Contracts;
 using DesktopPet.Application.Diagnostics;
 using DesktopPet.Domain.Pets;
+using DesktopPet.Application.Movement;
 
 namespace DesktopPet.Application.Runtime;
 
 // Owned by one PetRuntime. The loop never acquires the runtime's lifecycle semaphore.
 public sealed class BehaviorScheduler(TimeProvider clock, IRandomSource random, RuntimePolicy policy,
-    IBehaviorDecisionEngine decisions, IBehaviorAnimationPlayer player, IAppLogger logger)
+    IBehaviorDecisionEngine decisions, IBehaviorAnimationPlayer player, IAppLogger logger, IBehaviorActionExecutor? actions = null)
 {
     private int _running;
     private long _updatedAt;
@@ -98,14 +99,16 @@ public sealed class BehaviorScheduler(TimeProvider clock, IRandomSource random, 
         Publish();
         var before = Emotion.Current;
         var repeat = behavior.Id is BehaviorId.Idle or BehaviorId.Rest;
-        await player.PlayBehaviorAsync(behavior.Semantic, repeat ? duration : behavior.MinDuration, duration, repeat, semantic =>
+        void Resolved(AnimationSemantic semantic)
         {
             if (ct.IsCancellationRequested) return;
             State.ResolveAnimation(semantic);
             if (semantic != behavior.Semantic) Log(AppEvent.DecisionFallback, behavior.Id);
             Log(AppEvent.StateChanged, behavior.Id);
             Publish();
-        }, ct);
+        }
+        if (actions?.CanExecute(behavior.Id) == true) await actions.ExecuteAsync(behavior, Resolved, ct);
+        else await player.PlayBehaviorAsync(behavior.Semantic, repeat ? duration : behavior.MinDuration, duration, repeat, Resolved, ct);
         AdvanceEmotion();
         Emotion.Complete(behavior.Id);
         if (Math.Abs(before.Energy.Value - Emotion.Current.Energy.Value) >= policy.SignificantEmotionChange ||

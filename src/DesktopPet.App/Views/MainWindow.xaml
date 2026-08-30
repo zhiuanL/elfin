@@ -42,6 +42,26 @@
           <TextBox Text="{Binding Diagnostics, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" Height="140" VerticalScrollBarVisibility="Auto" />
         </StackPanel>
       </GroupBox>
+      <GroupBox DataContext="{Binding Movement}" Header="{Binding Heading}" Margin="0,8,0,8">
+        <StackPanel Margin="8">
+          <TextBlock Text="{Binding Hint}" TextWrapping="Wrap" />
+          <WrapPanel Margin="0,6">
+            <ComboBox ItemsSource="{Binding Modes}" SelectedValue="{Binding Mode}" SelectedValuePath="Value" DisplayMemberPath="Label" MinWidth="130" Margin="0,0,6,4" />
+            <ComboBox ItemsSource="{Binding Displays}" SelectedValue="{Binding Display}" SelectedValuePath="Value" DisplayMemberPath="Label" MinWidth="130" Margin="0,0,6,4" />
+            <ComboBox ItemsSource="{Binding Styles}" SelectedValue="{Binding Style}" SelectedValuePath="Value" DisplayMemberPath="Label" MinWidth="100" Margin="0,0,6,4" />
+            <ComboBox ItemsSource="{Binding Hybrids}" SelectedItem="{Binding Hybrid}" MinWidth="120" Margin="0,0,0,4" />
+          </WrapPanel>
+          <TextBox Text="{Binding SelectedIds, UpdateSourceTrigger=PropertyChanged}" MaxLength="2048" Margin="0,0,0,6" />
+          <WrapPanel>
+            <Button Content="{Binding ApplyText}" Command="{Binding ApplyCommand}" Padding="8,4" Margin="0,0,6,4" />
+            <Button Content="{Binding InteractiveText}" Command="{Binding InteractiveCommand}" Padding="8,4" Margin="0,0,6,4" />
+            <Button Content="{Binding ClickThroughText}" Command="{Binding ClickThroughCommand}" Padding="8,4" Margin="0,0,6,4" />
+            <Button Content="{Binding TemporaryText}" Command="{Binding TemporaryCommand}" Padding="8,4" Margin="0,0,6,4" />
+            <Button Content="{Binding RefreshText}" Command="{Binding RefreshCommand}" Padding="8,4" Margin="0,0,0,4" />
+          </WrapPanel>
+          <TextBox Text="{Binding Details, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" Height="105" VerticalScrollBarVisibility="Auto" />
+        </StackPanel>
+      </GroupBox>
       <GroupBox DataContext="{Binding Runtime}" Header="{Binding Heading}" Margin="0,8,0,0">
         <TextBox Text="{Binding Details, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"
                  Height="170" VerticalScrollBarVisibility="Auto" Margin="8" />

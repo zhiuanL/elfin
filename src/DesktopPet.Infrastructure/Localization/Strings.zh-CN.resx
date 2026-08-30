@@ -3,8 +3,8 @@
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
   <data name="AppTitle" xml:space="preserve"><value>桌面小精灵 · 控制中心</value></data>
-  <data name="BootstrapTitle" xml:space="preserve"><value>Phase 3</value></data>
-  <data name="BootstrapDescription" xml:space="preserve"><value>本地行为与情绪运行时已接入。单击互动，拖动调整位置，双击打开控制中心；下方可查看角色及行为诊断。</value></data>
+  <data name="BootstrapTitle" xml:space="preserve"><value>Phase 4</value></data>
+  <data name="BootstrapDescription" xml:space="preserve"><value>已接入安全自主移动。单击互动，拖动接管并更新 Home，双击打开控制中心；下方可调整移动范围，托盘可恢复鼠标交互。</value></data>
   <data name="OfflineReady" xml:space="preserve"><value>本地基础设施已就绪，无需 AI 账号或网络连接。</value></data>
   <data name="AiStorageUnavailable" xml:space="preserve"><value>AI 数据库暂不可用，本地核心仍可运行。</value></data>
   <data name="SettingsRecovered" xml:space="preserve"><value>无效配置已保留，并恢复为安全默认值。</value></data>
@@ -18,7 +18,7 @@
   <data name="TogglePet" xml:space="preserve"><value>切换显示</value></data>
   <data name="OpenControlCenter" xml:space="preserve"><value>打开控制中心</value></data>
   <data name="ExitApplication" xml:space="preserve"><value>退出程序</value></data>
-  <data name="PetTitle" xml:space="preserve"><value>桌面小精灵 · Phase 3</value></data>
+  <data name="PetTitle" xml:space="preserve"><value>桌面小精灵 · Phase 4</value></data>
   <data name="PetHint" xml:space="preserve"><value>拖动移动 · 双击控制中心 · 右键菜单</value></data>
   <data name="CommandFailed" xml:space="preserve"><value>窗口操作或状态保存失败。请检查本地日志；退出前可重试。</value></data>
   <data name="CharacterTools" xml:space="preserve"><value>角色开发诊断</value></data>
@@ -42,4 +42,22 @@
   <data name="RuntimeSummary" xml:space="preserve"><value>状态 {0}/{1} · 实际动画 {2}；心情 {3} / 精力 {4} / 无聊 {5} / 亲密 {6}；调度 {7} / 可见 {8} / 互动次数 {9}</value></data>
   <data name="RuntimeScore" xml:space="preserve"><value>{0}: {1:F2} · 过滤 {2} · 冷却 {3:F1}s；基础 {4:F2} × 角色 {5:F2} × 情绪 {6:F2} × 上下文 {7:F2} × 用户 {8:F2} × 近期 {9:F2}</value></data>
   <data name="RuntimeRecent" xml:space="preserve"><value>近期动作：{0}</value></data>
+  <data name="MovementTools" xml:space="preserve"><value>Phase 4 · 移动开发诊断</value></data>
+  <data name="MovementHint" xml:space="preserve"><value>依次为：移动模式 / 允许显示器 / 运动风格 / 混合策略。指定显示器请填下方设备 ID，用逗号分隔；点击应用才允许所选屏幕范围。拖拽会更新 Home。</value></data>
+  <data name="MovementApply" xml:space="preserve"><value>应用移动设置</value></data>
+  <data name="MovementFixed" xml:space="preserve"><value>固定</value></data>
+  <data name="MovementLocal" xml:space="preserve"><value>小范围</value></data>
+  <data name="MovementDesktop" xml:space="preserve"><value>全桌面</value></data>
+  <data name="MovementHybrid" xml:space="preserve"><value>混合</value></data>
+  <data name="DisplayPrimary" xml:space="preserve"><value>仅主屏</value></data>
+  <data name="DisplayCurrent" xml:space="preserve"><value>当前显示器</value></data>
+  <data name="DisplaySelected" xml:space="preserve"><value>指定显示器</value></data>
+  <data name="DisplayAll" xml:space="preserve"><value>所有显示器</value></data>
+  <data name="MotionQuiet" xml:space="preserve"><value>安静</value></data>
+  <data name="MotionNatural" xml:space="preserve"><value>自然</value></data>
+  <data name="MotionLively" xml:space="preserve"><value>活泼</value></data>
+  <data name="SetInteractive" xml:space="preserve"><value>恢复鼠标交互</value></data>
+  <data name="ToggleClickThrough" xml:space="preserve"><value>切换鼠标穿透</value></data>
+  <data name="TemporaryClickThrough" xml:space="preserve"><value>临时穿透 8 秒</value></data>
+  <data name="MovementSummary" xml:space="preserve"><value>快照：移动中 {0}；Home {1}；目标 {2}；朝向 {3}；鼠标模式 {4}</value></data>
 </root>

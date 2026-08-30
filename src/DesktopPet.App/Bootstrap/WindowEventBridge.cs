@@ -22,7 +22,7 @@ public sealed class WindowEventBridge(IPetWindow pet, IControlCenterWindow contr
         tray.CommandRequested += OnCommand;
         viewModel.CommandRequested += OnCommand;
         pet.DragCompleted += OnPositionChanged;
-        pet.DisplayMetricsChanged += OnPositionChanged;
+        pet.DisplayMetricsChanged += OnDisplayChanged;
         pet.ContextMenuRequested += OnContextMenu;
         if (pet is IPetInteractionSource source) source.Interaction += OnInteraction;
     }
@@ -32,6 +32,12 @@ public sealed class WindowEventBridge(IPetWindow pet, IControlCenterWindow contr
         await AtBoundaryAsync(async () => { await commands.ExecuteAsync(e.Command, _events.Token); });
     private async void OnPositionChanged(object? sender, EventArgs e) =>
         await AtBoundaryAsync(() => windows.SavePositionAsync(_events.Token));
+    private async void OnDisplayChanged(object? sender, EventArgs e) =>
+        await AtBoundaryAsync(async () =>
+        {
+            await pets.Runtime.ReconcileMovementAsync(false, _events.Token);
+            await windows.SavePositionAsync(_events.Token);
+        });
     private async void OnContextMenu(object? sender, ContextMenuRequestEventArgs e) =>
         await AtBoundaryAsync(() => { tray.ShowContextMenu(e.ScreenPosition); return Task.CompletedTask; });
     private async Task AtBoundaryAsync(Func<Task> action)
@@ -56,7 +62,7 @@ public sealed class WindowEventBridge(IPetWindow pet, IControlCenterWindow contr
         tray.CommandRequested -= OnCommand;
         viewModel.CommandRequested -= OnCommand;
         pet.DragCompleted -= OnPositionChanged;
-        pet.DisplayMetricsChanged -= OnPositionChanged;
+        pet.DisplayMetricsChanged -= OnDisplayChanged;
         pet.ContextMenuRequested -= OnContextMenu;
         if (pet is IPetInteractionSource source) source.Interaction -= OnInteraction;
         _events.Dispose();

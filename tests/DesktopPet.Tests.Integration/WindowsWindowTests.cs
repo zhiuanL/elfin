@@ -76,6 +76,42 @@ public sealed class WindowsWindowTests(Xunit.Abstractions.ITestOutputHelper outp
     });
 
     // Native adapter integration, not a mock of WPF or an external UI automation helper.
+    [Fact]
+    public Task ClickThroughStyleCanBeRestoredAndHiddenWindowsRejectAutonomousMoves() => OnSta(() =>
+    {
+        var window = new PetWindow(new PetWindowViewModel(new ResourceTextLocalizer("en-US")));
+        using var adapter = new WindowsPetWindow(window);
+        adapter.Show();
+        var handle = new WindowInteropHelper(window).Handle;
+        adapter.SetClickThrough(true);
+        Assert.NotEqual(0, GetWindowLongPtr(handle, -20).ToInt64() & 0x20);
+        adapter.SetClickThrough(false);
+        Assert.Equal(0, GetWindowLongPtr(handle, -20).ToInt64() & 0x20);
+        adapter.SetClickThrough(true);
+        adapter.Hide();
+        Assert.Equal(0, GetWindowLongPtr(handle, -20).ToInt64() & 0x20);
+        Assert.False(adapter.TryMoveAutonomously(new(0, 0)));
+        adapter.Show();
+        var before = adapter.Bounds;
+        Assert.True(adapter.TryMoveAutonomously(new(before.X + 5, before.Y + 5)));
+        Assert.Equal(before.X + 5, adapter.Bounds.X);
+    });
+
+    [Fact]
+    public Task DisplayTopologyReportsRealDpiAndDisposesProbeWindows() => OnSta(() =>
+    {
+        var topology = new WindowsDisplayService().GetTopology();
+        Assert.NotEmpty(topology.Displays);
+        Assert.Contains(topology.Displays, d => d.IsPrimary);
+        Assert.All(topology.Displays, d =>
+        {
+            Assert.InRange(d.Dpi.X, .5, 8); Assert.InRange(d.Dpi.Y, .5, 8);
+            Assert.True(d.WorkingArea.Width > 0 && d.WorkingArea.Height > 0);
+            output.WriteLine($"{d.Id}: {d.WorkingArea}; DPI {d.Dpi}");
+        });
+        Assert.All(topology.Adjacencies, edge => Assert.Contains(topology.Displays, d => d.Id == edge.FirstDisplayId));
+    });
+
     private static Task OnSta(Action test)
     {
         var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

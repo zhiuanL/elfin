@@ -2,7 +2,7 @@
 
 Windows 桌面小精灵：桌面陪伴优先，其次办公效率，再次 AI 助手。
 
-当前为 **Phase 3 本地行为与情绪运行时（PARTIAL：待人工行为验收）**。Phase 0–2 基线已确认通过。现已接入状态机、可取消调度、情绪、Utility 权重与冷却、单击反馈及开发诊断；保留角色包/PNG 能力，没有实现 Phase 4 自主移动、办公或 AI 业务。
+当前为 **Phase 4 安全自主移动（PARTIAL：待人工移动验收）**。Phase 0–3 基线已确认通过。已接入四种移动模式、Home、运动预设、显示器策略、朝向/镜像与鼠标穿透基础；保留已有角色、行为与窗口能力，没有实现 Phase 5+ 的正式控制中心、办公或 AI 业务。
 
 ## 文档与结构
 
@@ -12,6 +12,8 @@ Windows 桌面小精灵：桌面陪伴优先，其次办公效率，再次 AI �
 - [Phase 1 开发报告](docs/Phase-1-开发报告.md)
 - [Phase 2 开发报告](docs/Phase-2-开发报告.md)
 - [Phase 3 开发报告](docs/Phase-3-开发报告.md)
+- [Phase 4 开发报告](docs/Phase-4-开发报告.md)
+- [Phase 4 人工测试文档](docs/Phase-4-人工测试文档.md)
 - [角色包 Schema 1](docs/character-manifest.schema.json)
 - Solution：DesktopPet.sln；应用项目位于 src/，测试项目位于 tests/。
 
@@ -28,11 +30,11 @@ Windows x64 + .NET SDK 10.0.400（见 global.json）。若本机没有 SDK，可
 ## 验证
 
 ```powershell
-.\tools\Verify-Phase3.ps1
-.\tools\Verify-Phase3.ps1 -Configuration Release
+.\tools\Verify-Phase4.ps1
+.\tools\Verify-Phase4.ps1 -Configuration Release
 ```
 
-脚本执行 locked restore、build、test，保留 Phase 0–2 回归，并增加虚拟时间调度、情绪/Utility、角色切换和生命周期测试。Debug/Release 各 214 项通过，0 警告、0 错误；结果位于 artifacts/TestResults/。真实 WPF 测试可能短暂显示窗口、文件选择框与托盘图标。首次恢复依赖需要网络，应用启动不需要网络。自动测试和三分钟真实进程运行检查不能替代视觉、点击、拖拽和托盘的人工验收。
+脚本执行 locked restore、build、test，保留 Phase 0–3 回归，并增加运动数学、四模式/多屏策略、虚拟时间取消、Home 持久化与穿透测试。Debug/Release 各 256 项通过，0 警告、0 错误；结果位于 artifacts/TestResults/。真实 WPF 测试可能短暂显示窗口、文件选择框与托盘图标。首次恢复依赖需要网络，应用启动不需要网络。自动测试和三分钟真实进程运行检查不能替代视觉、点击、拖拽和托盘的人工验收。
 
 使用已安装且符合 global.json 的 SDK 时，也可直接执行：
 
@@ -42,7 +44,17 @@ dotnet build DesktopPet.sln --no-restore
 dotnet test DesktopPet.sln --no-build --no-restore
 ```
 
-## 运行 Phase 3
+## 运行 Phase 4
+
+推荐使用启动脚本（默认 Debug + Portable，先还原并构建）：
+
+```powershell
+.\tools\Start-Elfin.ps1
+.\tools\Start-Elfin.ps1 -Configuration Release
+.\tools\Start-Elfin.ps1 -NoBuild
+```
+
+脚本优先使用仓库内 SDK，找不到时使用 PATH 中的 dotnet；未安装时提示运行 SDK 安装脚本，不自动下载 SDK。`-NoBuild` 直接启动已有构建，`-Installed` 改用 `%LOCALAPPDATA%/DesktopPet`，`-WhatIf` 仅预览、不构建也不启动。脚本可从任意工作目录通过完整路径调用；检测到已运行的 DesktopPet.App 会提示从托盘退出，不强制结束进程。不会清理或覆盖 UserData，Debug/Release 的便携数据互相独立；普通应用启动仍会按既有逻辑保存设置。首次还原依赖可能联网，离线启动已有构建可用 `-NoBuild`。
 
 使用仓库内 SDK：
 
@@ -61,7 +73,15 @@ $env:DOTNET_ROOT = (Resolve-Path .\.tools\dotnet).Path
 
 拖动小精灵移动，双击打开控制中心，右键打开常用菜单。控制中心关闭默认隐藏到托盘；小精灵关闭请求仅隐藏小精灵。真正退出请使用托盘或控制中心的“退出程序”。窗口状态、物理像素位置和激活角色标识由 Settings Service 保存。
 
-配置 schema 1/2/3 自动升级为 4，保留备份及窗口偏好。稳定 Mood/Energy/Affinity 按角色保存，Boredom、帧号、冷却和近期动作不跨启动恢复。controlCenterCloseBehavior 可选 HideToTray（默认）或 Exit。请勿运行多个实例共用同一数据目录；全应用多实例互斥尚未纳入本阶段。
+配置 schema 1/2/3/4 自动升级为 5，保留备份及窗口偏好；Home、显示器选择和运动偏好经 Settings Service 持久化。稳定 Mood/Energy/Affinity 按角色保存，Boredom、帧号、冷却和近期动作不跨启动恢复。controlCenterCloseBehavior 可选 HideToTray（默认）或 Exit。请勿运行多个实例共用同一数据目录；全应用多实例互斥尚未纳入本阶段。
+
+“Phase 4 · 移动开发诊断”中选择固定 / 小范围 / 全桌面 / 混合，点击“应用移动设置”。默认混合 + 当前显示器 + 自然：围绕 Home 活动，空闲两分钟后偶尔扩大范围；点击互动可触发后续返回 Home，拖动结束更新 Home。自主行为由调度器择机执行，不是点击设置后立即移动。固定模式只允许手动拖动。
+
+跨屏需明确选择“所有显示器”，或“指定显示器”并填写诊断区显示的设备 ID（逗号分隔）。仅共享连续矩形工作区的相邻屏幕允许直线跨越；存在空洞、不同工作区边缘或 DPI 变化时保守取消/校正，不穿越不可见区域。没有任何指定屏幕在线时暂停自主移动并保留可见窗口。
+
+“切换鼠标穿透”可开关穿透；“临时穿透 8 秒”自动恢复。无法点击小精灵时，使用托盘的“恢复鼠标交互”。隐藏、退出、下次启动均恢复交互，不持久化可能使窗口无法点击的模式。移动诊断为手动刷新快照。
+
+角色包仍为 Schema 1；旧包无需修改且缺少 walk 时使用 idle/fallback。新包可选声明 manifest.visualAnchor（0..1 的窗口画布锚点，默认底部中点）、supportsMirroring、movement 推荐值，并在 animations 声明 walk / walk-left / walk-right。依赖新能力的包可将 minimumAppVersion 设为 0.4.0；字段格式见角色包 Schema。系统上限优先于用户设置，用户设置优先于角色推荐。
 
 双库仅有版本化迁移账本，没有业务表。UI 文本来自 zh-CN/en-US 资源；用户配置位于 config/settings.json。API Key 不允许写入此文件、源码、数据库明文字段或日志；安全存储的业务接入留待 Phase 7。
 

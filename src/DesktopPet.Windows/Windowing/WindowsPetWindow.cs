@@ -7,16 +7,30 @@ using DesktopPet.Application.Commands;
 using DesktopPet.Application.Windows;
 using DesktopPet.Domain.Platform;
 using DesktopPet.Application.Runtime;
+using DesktopPet.Application.Movement;
 using DpiScale = DesktopPet.Domain.Platform.DpiScale;
 
 namespace DesktopPet.Windows.Windowing;
 
-public sealed class WindowsPetWindow : IPetWindow, IPetInteractionSource
+public sealed class WindowsPetWindow : IPetWindow, IPetInteractionSource, IPetMovementPort
 {
     private readonly Window _window;
     private HwndSource? _source;
     private nint _handle;
     private bool _allowClose, _disposed, _closed, _dragging, _metricsQueued;
+    private bool _pointerOwned, _dragMoved;
+    public bool IsUserOwned => _pointerOwned || _dragging || _metricsQueued;
+    public bool TryMoveAutonomously(PixelPoint origin)
+    {
+        if (_disposed || _closed || IsUserOwned || !IsVisible) return false;
+        MoveTo(origin);
+        return true;
+    }
+    public void SetClickThrough(bool enabled)
+    {
+        if (_closed) return;
+        NativeDesktop.SetClickThrough(Handle, enabled);
+    }
     public WindowsPetWindow(Window window)
     {
         _window = window;
@@ -47,7 +61,7 @@ public sealed class WindowsPetWindow : IPetWindow, IPetInteractionSource
     public void MoveTo(PixelPoint origin) => NativeDesktop.Move(Handle, origin);
     public void SetTopmost(bool topmost) => _window.Topmost = topmost;
     public void Show() { EnsureCreated(); _window.Show(); }
-    public void Hide() => _window.Hide();
+    public void Hide() { SetClickThrough(false); _window.Hide(); }
     public void Close()
     {
         if (_closed) return;
@@ -64,16 +78,18 @@ public sealed class WindowsPetWindow : IPetWindow, IPetInteractionSource
         }
         if (e.ButtonState != MouseButtonState.Pressed) return;
         var before = Bounds;
+        _pointerOwned = true;
+        _dragMoved = false;
         Interaction?.Invoke(this, new(PetInteractionKind.PointerPressed));
         _dragging = true;
         try { _window.DragMove(); }
         // The button can be released between receiving the message and entering the native move loop.
         catch (InvalidOperationException) when (Mouse.LeftButton == MouseButtonState.Released) { }
-        finally { _dragging = false; }
+        finally { _dragging = false; _pointerOwned = false; }
         if (!_closed)
         {
             var after = Bounds;
-            Interaction?.Invoke(this, new(before.X == after.X && before.Y == after.Y ? PetInteractionKind.Click : PetInteractionKind.DragEnded));
+            Interaction?.Invoke(this, new(!_dragMoved && before.X == after.X && before.Y == after.Y ? PetInteractionKind.Click : PetInteractionKind.DragEnded));
             DragCompleted?.Invoke(this, EventArgs.Empty);
         }
     }
@@ -91,6 +107,7 @@ public sealed class WindowsPetWindow : IPetWindow, IPetInteractionSource
     private void OnClosed(object? sender, EventArgs e) { _closed = true; DetachHook(); }
     private nint WindowMessage(nint hwnd, int message, nint wParam, nint lParam, ref bool handled)
     {
+        if (message == 0x0216 && _dragging) _dragMoved = true; // WM_MOVING, including a drag that returns to its origin.
         if (message is NativeDesktop.WmDpiChanged or NativeDesktop.WmDisplayChange or NativeDesktop.WmSettingChange)
         {
             // WPF owns WM_DPICHANGED and its suggested RECT. Never scale a second time here.

@@ -3,6 +3,7 @@ using DesktopPet.Application.Characters;
 using DesktopPet.Domain.Pets;
 using DesktopPet.Domain.Platform;
 using DesktopPet.Domain.Productivity;
+using DesktopPet.Domain.Movement;
 
 namespace DesktopPet.Application.Contracts;
 
@@ -29,8 +30,9 @@ public interface IEmotionService
 }
 public interface IMovementController
 {
-    Task MoveAsync(PixelPoint target, CancellationToken ct);
+    Task MoveAsync(MovementPlan plan, CancellationToken ct);
     void Stop();
+    Task StopAsync();
 }
 public interface ICharacterPackageService
 {

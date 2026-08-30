@@ -4,6 +4,8 @@ using DesktopPet.Application.Contracts;
 using DesktopPet.Application.Diagnostics;
 using DesktopPet.CharacterSdk;
 using DesktopPet.Domain.Pets;
+using DesktopPet.Domain.Movement;
+using DesktopPet.Application.Movement;
 
 namespace DesktopPet.Application.Runtime;
 
@@ -17,6 +19,7 @@ public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, IDisposabl
     private readonly RuntimePolicy _policy;
     private readonly IExceptionHandler _exceptions;
     private readonly IAppLogger _logger;
+    private readonly IMovementService? _movement;
     private readonly SemaphoreSlim _operations = new(1, 1);
     private readonly BehaviorScheduler _scheduler;
     private CancellationTokenSource? _lifetime, _run;
@@ -24,11 +27,14 @@ public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, IDisposabl
     private bool _started, _stopped, _disposed;
     private RuntimeDiagnostic _diagnostic;
     public PetRuntime(CharacterPresentationService presentation, ISettingsService settings, ICharacterBehaviorProfileReader profiles,
-        TimeProvider clock, RuntimePolicy policy, IRandomSource random, IExceptionHandler exceptions, IAppLogger logger)
+        TimeProvider clock, RuntimePolicy policy, IRandomSource random, IExceptionHandler exceptions, IAppLogger logger,
+        IMovementService? movement = null)
     {
         _presentation = presentation; _settings = settings; _profiles = profiles; _clock = clock;
         _policy = policy; _exceptions = exceptions; _logger = logger;
-        _scheduler = new(clock, random, policy, new LocalBehaviorDecisionEngine(policy, random), presentation, logger);
+        _movement = movement;
+        _scheduler = new(clock, random, policy, new LocalBehaviorDecisionEngine(policy, random), presentation, logger,
+            movement is null ? null : new MovementBehaviorAction(movement, presentation));
         _scheduler.CheckpointAsync = SaveEmotionAsync;
         _scheduler.Changed += OnChanged;
         _diagnostic = _scheduler.Diagnostic;
@@ -36,6 +42,7 @@ public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, IDisposabl
     public PetInstanceId InstanceId { get; } = new(Guid.NewGuid());
     public CharacterPackage? Current => _presentation.Current;
     public RuntimeDiagnostic Diagnostic => _diagnostic;
+    public MovementDiagnostic? Movement => _movement?.Diagnostic;
     public PetSnapshot Snapshot => new(InstanceId, Current?.Definition.Id ?? new(string.Empty), _diagnostic.State.Primary, _diagnostic.Emotion);
     public event EventHandler? Changed;
     private void OnChanged(object? sender, EventArgs e) { _diagnostic = _scheduler.Diagnostic; Changed?.Invoke(this, EventArgs.Empty); }
@@ -59,10 +66,47 @@ public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, IDisposabl
         var package = Current ?? throw new InvalidOperationException("A character must be loaded first.");
         var profile = await _profiles.ReadAsync(package, ct);
         var checkpoint = _settings.Current.Emotions.FirstOrDefault(item => item is not null && item.CharacterId == package.Definition.Id.Value);
-        _scheduler.Configure(new BehaviorCatalog(_policy).Build(profile, _settings.Current.Runtime),
+        _movement?.Configure(package);
+        var behaviors = new BehaviorCatalog(_policy).Build(profile, _settings.Current.Runtime).ToList();
+        if (_movement is not null) behaviors.Add(MoveBehavior());
+        _scheduler.Configure(behaviors,
             package.Definition.Animations.Keys.Select(key => new AnimationSemantic(key)).ToHashSet(),
             checkpoint?.Restore() ?? EmotionState.Initial);
         _logger.Write(new(AppEvent.CharacterSwitched, _clock.GetUtcNow()));
+    }
+    private BehaviorDefinition MoveBehavior() => new(BehaviorId.Move, new("walk"), 1.5,
+        _movement!.Motion.MovementInterval, TimeSpan.FromSeconds(1), MotionPolicy.MaxMovementDuration,
+        BehaviorPriority.Low, true, [], [new(EmotionAxis.Boredom, ModifierDirection.High, 1)],
+        Enabled: _settings.Current.MovementMode != MovementMode.Fixed);
+
+    public async Task ReconcileMovementAsync(bool updateHome, CancellationToken ct)
+    {
+        await _operations.WaitAsync(ct);
+        try
+        {
+            if (_stopped || !_started || _movement is null) return;
+            await CancelLoopAsync();
+            await _movement.ReconcileAsync(updateHome, ct);
+        }
+        finally { Resume(); _operations.Release(); }
+    }
+    public async Task ApplyMovementSettingsAsync(MovementMode mode, HybridMovementStrategy hybrid, DisplayPolicy displays,
+        MotionStyle style, IReadOnlyList<string> selected, CancellationToken ct)
+    {
+        if (!Enum.IsDefined(mode) || !Enum.IsDefined(hybrid) || !Enum.IsDefined(displays) || !Enum.IsDefined(style))
+            throw new ArgumentException("Invalid movement setting.");
+        await _operations.WaitAsync(ct);
+        try
+        {
+            if (_stopped || !_started) return;
+            await CancelLoopAsync();
+            await SaveEmotionAsync(ct);
+            await _settings.UpdateAsync(s => s with { MovementMode = mode, HybridStrategy = hybrid, DisplayPolicy = displays,
+                MotionStyle = style, Movement = s.Movement with { UserMotionStyle = style, SelectedDisplays = selected.ToArray() } }, ct);
+            await ConfigureAsync(ct);
+            if (_movement is not null) await _movement.ReconcileAsync(false, ct);
+        }
+        finally { Resume(); _operations.Release(); }
     }
     public async Task<CharacterOperationResult> ActivateAsync(CharacterId id, CancellationToken ct)
     {
@@ -73,7 +117,11 @@ public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, IDisposabl
             await CancelLoopAsync();
             await SaveEmotionAsync(ct);
             var result = await _presentation.ActivateAsync(id, ct);
-            if (result.Succeeded) await ConfigureAsync(ct);
+            if (result.Succeeded)
+            {
+                await ConfigureAsync(ct);
+                if (_movement is not null) await _movement.ReconcileAsync(false, ct);
+            }
             return result;
         }
         finally { Resume(); _operations.Release(); }
@@ -88,6 +136,7 @@ public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, IDisposabl
             _scheduler.IsVisible = visible;
             _scheduler.IsInteracting = false;
             await _presentation.SetVisibleAsync(visible, ct);
+            if (visible && _movement is not null) await _movement.ReconcileAsync(false, ct);
             if (!visible) await SaveEmotionAsync(ct);
             _scheduler.Publish();
         }
@@ -106,6 +155,8 @@ public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, IDisposabl
             else
             {
                 _scheduler.State.Complete();
+                _movement?.RecordInteraction();
+                if (kind == PetInteractionKind.DragEnded && _movement is not null) await _movement.ReconcileAsync(true, ct);
                 var feedback = kind == PetInteractionKind.Click && _scheduler.Interact();
                 if (feedback) Resume(InteractionBehavior());
             }
@@ -172,6 +223,7 @@ public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, IDisposabl
             finally
             {
                 _scheduler.IsVisible = false; _scheduler.IsInteracting = false; _scheduler.Publish();
+                if (_movement is not null) await _movement.StopAsync(CancellationToken.None);
                 await _presentation.StopAsync(CancellationToken.None);
             }
         }

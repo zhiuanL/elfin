@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using DesktopPet.Domain.Pets;
+using DesktopPet.Domain.Movement;
 
 namespace DesktopPet.CharacterSdk;
 
@@ -59,6 +60,9 @@ public sealed record CharacterManifest
     public IReadOnlyDictionary<string, LocalizedCharacterText> Locales { get; init; } = new Dictionary<string, LocalizedCharacterText>();
     public CharacterProfileReferences Profiles { get; init; } = new();
     public bool IsDevelopmentFixture { get; init; }
+    public VisualAnchor? VisualAnchor { get; init; }
+    public bool SupportsMirroring { get; init; }
+    public MotionOverrides? Movement { get; init; }
 }
 public sealed record CharacterPackageMetadata(CharacterTier TargetTier, CharacterTier ActualLevel,
     int CompletenessPercentage, IReadOnlyList<CharacterCapability> MissingCapabilities, IReadOnlyList<ValidationIssue> Warnings);

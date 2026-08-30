@@ -4,6 +4,7 @@ using DesktopPet.Application.Diagnostics;
 using DesktopPet.CharacterSdk;
 using DesktopPet.Domain.Pets;
 using DesktopPet.Application.Runtime;
+using DesktopPet.Application.Movement;
 
 namespace DesktopPet.Application.Characters;
 
@@ -20,6 +21,8 @@ public sealed class CharacterPresentationService(ICharacterPackageService charac
     private readonly PetInstanceId _instance = new(Guid.NewGuid());
     public CharacterPackage? Current { get; private set; }
     public event EventHandler? Changed;
+    public Task SetMirroredAsync(bool mirrored, CancellationToken ct) =>
+        surface is ICharacterVisualSurface visual ? visual.SetMirroredAsync(mirrored, ct) : Task.CompletedTask;
 
     public async Task InitializeAsync(CancellationToken ct, bool preferBehaviorReady = false)
     {

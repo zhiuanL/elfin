@@ -10,6 +10,21 @@ internal static class NativeDesktop
     internal const int WmDisplayChange = 0x007E;
     internal const int WmSettingChange = 0x001A;
     private const uint NoSize = 0x0001, NoZOrder = 0x0004, NoActivate = 0x0010;
+    private const int ExtendedStyle = -20, TransparentStyle = 0x20;
+    [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW", SetLastError = true)]
+    private static extern nint GetWindowLongPtr(nint window, int index);
+    [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW", SetLastError = true)]
+    private static extern nint SetWindowLongPtr(nint window, int index, nint value);
+    internal static void SetClickThrough(nint window, bool enabled)
+    {
+        var style = GetWindowLongPtr(window, ExtendedStyle).ToInt64();
+        var next = enabled ? style | TransparentStyle : style & ~TransparentStyle;
+        Marshal.SetLastPInvokeError(0);
+        if (SetWindowLongPtr(window, ExtendedStyle, (nint)next) == 0 && Marshal.GetLastPInvokeError() != 0)
+            throw new Win32Exception(Marshal.GetLastPInvokeError());
+        if (!SetWindowPos(window, 0, 0, 0, 0, 0, NoSize | NoZOrder | NoActivate | 0x0002 | 0x0020))
+            throw new Win32Exception(Marshal.GetLastWin32Error());
+    }
 
     [StructLayout(LayoutKind.Sequential)]
     internal struct Rect { public int Left, Top, Right, Bottom; }

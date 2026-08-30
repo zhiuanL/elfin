@@ -13,6 +13,17 @@
     "defaultLocale": { "$ref": "#/$defs/locale", "default": "zh-CN" },
     "targetTier": { "enum": ["basic", "standard", "full"], "default": "basic" },
     "isDevelopmentFixture": { "type": "boolean", "default": false },
+    "supportsMirroring": { "type": "boolean", "default": false },
+    "visualAnchor": { "type": ["object", "null"], "additionalProperties": false, "properties": {
+      "x": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.5 },
+      "y": { "type": "number", "minimum": 0, "maximum": 1, "default": 1 }
+    } },
+    "movement": { "type": ["object", "null"], "additionalProperties": false, "$comment": "Optional recommendations; system safety limits and user choices take precedence.", "properties": {
+      "speed": { "type": ["number", "null"] }, "acceleration": { "type": ["number", "null"] },
+      "deceleration": { "type": ["number", "null"] }, "pauseProbability": { "type": ["number", "null"] },
+      "movementIntervalSeconds": { "type": ["number", "null"] }, "wanderRadius": { "type": ["number", "null"] },
+      "easing": { "enum": ["smoothStep", "smootherStep", null] }
+    } },
     "assets": {
       "type": "object", "additionalProperties": false, "required": ["preview", "fallback"],
       "properties": { "preview": { "$ref": "#/$defs/path" }, "fallback": { "$ref": "#/$defs/path" } }

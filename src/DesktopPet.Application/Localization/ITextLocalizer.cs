@@ -9,7 +9,10 @@ public enum TextKey { AppTitle, BootstrapTitle, BootstrapDescription, OfflineRea
     CharacterRemove, CharacterPlay, CharacterAccepted, CharacterRejected, CharacterInvalidSemantic,
     CharacterTargetTier, CharacterActualTier, CharacterMissingCapabilities,
     CharacterBrowseZip, CharacterBrowseFolder, CharacterZipFilter,
-    RuntimeDiagnostics, RuntimeSummary, RuntimeScore, RuntimeRecent }
+    RuntimeDiagnostics, RuntimeSummary, RuntimeScore, RuntimeRecent,
+    MovementTools, MovementHint, MovementApply, MovementFixed, MovementLocal, MovementDesktop, MovementHybrid,
+    DisplayPrimary, DisplayCurrent, DisplaySelected, DisplayAll, MotionQuiet, MotionNatural, MotionLively,
+    SetInteractive, ToggleClickThrough, TemporaryClickThrough, MovementSummary }
 public interface ITextLocalizer
 {
     CultureInfo Culture { get; }

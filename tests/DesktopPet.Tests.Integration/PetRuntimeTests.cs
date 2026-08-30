@@ -120,7 +120,7 @@ public sealed class PetRuntimeTests
         await File.WriteAllTextAsync(path, json);
         var loaded = await context.Settings.LoadAsync(default);
         Assert.Equal(SettingsLoadStatus.Migrated, loaded.Status);
-        Assert.Equal(4, loaded.Settings.SchemaVersion);
+        Assert.Equal(AppSettings.CurrentSchemaVersion, loaded.Settings.SchemaVersion);
         Assert.False(loaded.Settings.PetWindow.IsVisible);
         Assert.Equal("custom.pet", loaded.Settings.ActiveCharacterId);
         Assert.Equal(json, await File.ReadAllTextAsync(path + ".bak"));

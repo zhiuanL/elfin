@@ -47,6 +47,12 @@ public interface IControlCenterWindow : IDisposable
 public sealed record TrayMenuItem(CommandId Command, TextKey Label);
 public static class TrayMenuDefinition
 {
+    public static IReadOnlyList<TrayMenuItem> InputItems() =>
+    [
+        new(CommandId.SetInteractive, TextKey.SetInteractive),
+        new(CommandId.ToggleClickThrough, TextKey.ToggleClickThrough),
+        new(CommandId.TemporaryClickThrough, TextKey.TemporaryClickThrough)
+    ];
     public static IReadOnlyList<TrayMenuItem> Create() =>
     [
         new(CommandId.ShowPet, TextKey.ShowPet),

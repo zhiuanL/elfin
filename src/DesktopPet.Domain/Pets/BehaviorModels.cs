@@ -1,6 +1,6 @@
 namespace DesktopPet.Domain.Pets;
 
-public enum BehaviorId { Idle, Blink, Happy, Rest, Talking, Interacting }
+public enum BehaviorId { Idle, Blink, Happy, Rest, Talking, Interacting, Move }
 public enum EmotionAxis { Mood, Energy, Boredom, Affinity }
 public enum ModifierDirection { High, Low }
 public enum CandidateFilter { None, Hidden, Interacting, MissingCapability, Cooldown, RecentRepeat, Disabled }

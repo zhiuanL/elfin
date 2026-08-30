@@ -6,6 +6,8 @@
         Topmost="True" ShowInTaskbar="False" ShowActivated="False"
         WindowStartupLocation="Manual" UseLayoutRounding="True">
   <Grid ToolTip="{Binding Hint}" AutomationProperties.Name="{Binding Hint}">
-    <Image Source="{Binding Character.Frame}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" />
+    <Image Source="{Binding Character.Frame}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" RenderTransformOrigin="0.5,0.5">
+      <Image.RenderTransform><ScaleTransform ScaleX="{Binding Character.ScaleX}" /></Image.RenderTransform>
+    </Image>
   </Grid>
 </Window>

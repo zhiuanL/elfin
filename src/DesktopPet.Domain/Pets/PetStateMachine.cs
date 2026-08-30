@@ -33,7 +33,8 @@ public sealed class PetStateMachine
         Changed?.Invoke(this, EventArgs.Empty);
     }
     private static PetState IdleState() => new(PetPrimaryState.Idle, null, BehaviorId.Idle, AnimationSemantic.Idle);
-    private static PetState FromSemantic(BehaviorId behavior, AnimationSemantic semantic) => semantic.Value switch
+    private static PetState FromSemantic(BehaviorId behavior, AnimationSemantic semantic) =>
+        behavior == BehaviorId.Move ? new(PetPrimaryState.Moving, null, behavior, semantic) : semantic.Value switch
     {
         "idle" or "fallback" => new(PetPrimaryState.Idle, null, behavior, semantic),
         "blink" => new(PetPrimaryState.Acting, PetTransientState.Blink, behavior, semantic),

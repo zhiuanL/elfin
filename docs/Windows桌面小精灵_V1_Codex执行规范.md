@@ -391,3 +391,16 @@ Codex 每次只处理一个 Phase，并输出：
 - 原生拖动和双击控制中心保持 Phase 1 入口；按下暂停行为，拖动结束恢复，无位移释放计为单击，500ms 防抖避免高频情绪叠加。生命周期/指针接管为强制取消边界，普通状态切换遵守优先级、最短持续时间及可中断性。
 - 默认无有效选择时优先动作较完整的已安装包，已有选择不变；Basic 缺失能力被过滤。生产行为事件按种类至少间隔 10 秒，诊断页面显示上次决策快照，不为每帧记录日志。
 - 无自主位移、全屏/前台识别、锁屏/电源策略、办公业务、AI/TTS、成长或多角色并行。后续修改这些契约必须同步测试与本注释。
+
+## 24. Phase 4 实施契约注释（2026-08-28）
+
+- Phase 3 人工验收由用户确认通过；历史报告原始验收记录不追改。Phase 4 的未完成验收见 Phase-4-开发报告.md，不进入 Phase 5。
+- IMovementService 负责 Home、目标策略与设置；既有 IMovementController 占位契约收敛为 MovementPlan + 可等待停止，由 MovementEngine 实现。BehaviorScheduler 只调用 IBehaviorActionExecutor，Utility 不处理坐标，MovementEngine 不读 PNG。
+- 持久化枚举沿用 Fixed/Local/Desktop/Hybrid，其中 Local 对应 SmallRange，Desktop 对应 FullDesktop；LockedCurrent/SelectedMonitors/AllMonitors 对应 CurrentDisplay/SelectedDisplays/AllDisplays。默认 Hybrid + SmartHybrid + LockedCurrent + Natural。
+- MotionPolicy 集中预设与上限，DIP/s、DIP/s²、DIP 半径；可见且移动时最多约 30fps，间隔至少 8 秒，单段最多 45 秒，帧间隔超过 250ms 取消而非跳跃。easing 根据速度及加减速上限推导持续时间。
+- WindowsDisplayService 实现既有 IDisplayTopologyService，提供物理像素 Bounds/WorkingArea、DPI、Primary 和简单邻接。只允许已授权且工作区构成连续矩形的相邻屏幕直线跨越，不做复杂图搜索；每次目标决策重新读取拓扑。DPI/显示器消息沿既有 IPetWindow.DisplayMetricsChanged 入口取消、校正并恢复。
+- 物理像素全局原点不做 DPI 除法；WPF 保留 DIP 窗口尺寸，跨屏路径采用两屏尺寸最大包络。WM_DPICHANGED 仍由 WPF 处理，平台事件仅取消并重读实际尺寸，避免二次缩放。
+- Character Schema 保持 1；optional visualAnchor/supportsMirroring/movement 向后兼容。锚点按整个窗口画布归一化，方向优先专用语义、能力允许时镜像、普通 walk、idle/fallback。不判断角色物种，不引入 HitArea 或 PNG 新格式。新能力最低应用版本为 0.4.0。
+- Settings schema 5 添加 MovementSettings：Home、拖动更新开关、指定显示器、用户显式风格及参数覆盖。schema 1–4 迁移保留原文件备份。显式用户风格覆盖角色推荐，未显式选择时允许使用角色推荐；系统硬限制始终生效。双库 Schema 不变。
+- 指针按下在 Windows 层同步撤销自主位移权限，再由 Runtime 取消并等待旧移动/动画。隐藏、切换、显示器变化、退出同样先取消旧任务；拖动结束夹取窗口并按配置更新 Home。
+- Interactive/ClickThrough/TemporaryPassThrough 由统一 IMouseInteractionService 与显式命令暴露；Windows 仅切换 WS_EX_TRANSPARENT，保留其他样式。临时 8 秒后恢复，托盘保留恢复入口，隐藏/退出/重启恢复可交互。未加入智能全屏/Focus 穿透、快捷键或完整设置页面。

@@ -4,12 +4,13 @@ namespace DesktopPet.Application.Configuration;
 
 public sealed record AppSettings
 {
-    public const int CurrentSchemaVersion = 4;
+    public const int CurrentSchemaVersion = 5;
     public const int MaxEmotionCheckpoints = 256;
     public int SchemaVersion { get; init; } = CurrentSchemaVersion;
     public string Culture { get; init; } = "zh-CN";
     public string? ActiveCharacterId { get; init; }
     public RuntimePreferences Runtime { get; init; } = new();
+    public MovementSettings Movement { get; init; } = new();
     public IReadOnlyList<EmotionCheckpoint> Emotions { get; init; } = [];
     public MovementMode MovementMode { get; init; } = MovementMode.Hybrid;
     public HybridMovementStrategy HybridStrategy { get; init; } = HybridMovementStrategy.SmartHybrid;
@@ -24,14 +25,15 @@ public sealed record AppSettings
     // Settings remain a value snapshot after JSON materializes collection instances.
     public bool Equals(AppSettings? other) => ReferenceEquals(this, other) || other is not null &&
         SchemaVersion == other.SchemaVersion && Culture == other.Culture && ActiveCharacterId == other.ActiveCharacterId &&
-        Equals(Runtime, other.Runtime) && (Emotions is null ? other.Emotions is null : other.Emotions is not null && Emotions.SequenceEqual(other.Emotions)) &&
+        Equals(Runtime, other.Runtime) && Equals(Movement, other.Movement) &&
+        (Emotions is null ? other.Emotions is null : other.Emotions is not null && Emotions.SequenceEqual(other.Emotions)) &&
         MovementMode == other.MovementMode && HybridStrategy == other.HybridStrategy && DisplayPolicy == other.DisplayPolicy &&
         MotionStyle == other.MotionStyle && PerformanceMode == other.PerformanceMode && Equals(Logging, other.Logging) &&
         Equals(Security, other.Security) && Equals(PetWindow, other.PetWindow) && ControlCenterCloseBehavior == other.ControlCenterCloseBehavior;
     public override int GetHashCode()
     {
         var hash = new HashCode();
-        hash.Add(SchemaVersion); hash.Add(Culture); hash.Add(ActiveCharacterId); hash.Add(Runtime);
+        hash.Add(SchemaVersion); hash.Add(Culture); hash.Add(ActiveCharacterId); hash.Add(Runtime); hash.Add(Movement);
         if (Emotions is not null) foreach (var emotion in Emotions) hash.Add(emotion);
         hash.Add(MovementMode); hash.Add(HybridStrategy); hash.Add(DisplayPolicy); hash.Add(MotionStyle);
         hash.Add(PerformanceMode); hash.Add(Logging); hash.Add(Security); hash.Add(PetWindow); hash.Add(ControlCenterCloseBehavior);
@@ -43,7 +45,7 @@ public sealed record AppSettings
         Enum.IsDefined(MovementMode) && Enum.IsDefined(HybridStrategy) &&
         Enum.IsDefined(DisplayPolicy) && Enum.IsDefined(MotionStyle) && Enum.IsDefined(PerformanceMode) &&
         Logging is not null && Logging.IsValid() && Security is not null && Security.IsValid() &&
-        PetWindow is not null && Runtime is not null && Runtime.Behaviors is not null &&
+        PetWindow is not null && Movement is { IsValid: true } && Runtime is not null && Runtime.Behaviors is not null &&
         Emotions is not null && Emotions.Count <= MaxEmotionCheckpoints && Enum.IsDefined(ControlCenterCloseBehavior);
 }
 public sealed record LogOptions

@@ -6,6 +6,16 @@ internal sealed class ManualTimeProvider : TimeProvider
     private readonly object _gate = new();
     private readonly List<ManualTimer> _timers = [];
     private long _ticks;
+    private TaskCompletionSource _scheduled = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public Task WaitForTimerAsync()
+    {
+        lock (_gate)
+        {
+            if (_timers.Any(t => !t.Disposed && t.Due < long.MaxValue)) return Task.CompletedTask;
+            if (_scheduled.Task.IsCompleted) _scheduled = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            return _scheduled.Task;
+        }
+    }
     public override long TimestampFrequency => TimeSpan.TicksPerSecond;
     public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
     public override long GetTimestamp() { lock (_gate) return _ticks; }
@@ -15,6 +25,18 @@ internal sealed class ManualTimeProvider : TimeProvider
         var timer = new ManualTimer(this, callback, state);
         timer.Change(dueTime, period);
         return timer;
+    }
+    public void Jump(TimeSpan amount)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(amount.Ticks);
+        ManualTimer[] due;
+        lock (_gate)
+        {
+            _ticks += amount.Ticks;
+            due = _timers.Where(t => !t.Disposed && t.Due <= _ticks).ToArray();
+            foreach (var timer in due) timer.Due = long.MaxValue;
+        }
+        foreach (var timer in due) timer.Callback(timer.State);
     }
     public void Advance(TimeSpan amount)
     {
@@ -49,6 +71,7 @@ internal sealed class ManualTimeProvider : TimeProvider
                 Due = dueTime == Timeout.InfiniteTimeSpan ? long.MaxValue : clock._ticks + dueTime.Ticks;
                 Period = period.Ticks;
                 if (!clock._timers.Contains(this)) clock._timers.Add(this);
+                if (Due < long.MaxValue) clock._scheduled.TrySetResult();
                 return true;
             }
         }

@@ -20,7 +20,7 @@ public sealed class WindowsTrayService(ITextLocalizer text) : ITrayService
         ObjectDisposedException.ThrowIf(_disposed, this);
         if (_icon is not null) return;
         _menu = new ContextMenuStrip();
-        foreach (var item in TrayMenuDefinition.Create())
+        foreach (var item in TrayMenuDefinition.Create().Concat(TrayMenuDefinition.InputItems()))
         {
             var entry = new ToolStripMenuItem(text.Get(item.Label));
             entry.Click += (_, _) => CommandRequested?.Invoke(this, new(item.Command));

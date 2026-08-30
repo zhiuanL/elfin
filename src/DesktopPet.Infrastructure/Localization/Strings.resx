@@ -3,8 +3,8 @@
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
   <data name="AppTitle" xml:space="preserve"><value>DesktopPet · Control Center</value></data>
-  <data name="BootstrapTitle" xml:space="preserve"><value>Phase 3</value></data>
-  <data name="BootstrapDescription" xml:space="preserve"><value>Local behavior and emotion runtime is connected. Click to interact, drag to move, or double-click for this center. Character and behavior diagnostics are below.</value></data>
+  <data name="BootstrapTitle" xml:space="preserve"><value>Phase 4</value></data>
+  <data name="BootstrapDescription" xml:space="preserve"><value>Safe autonomous movement is connected. Click to interact, drag to take over and update Home, or double-click for this center. Adjust movement below; restore mouse interaction from the tray.</value></data>
   <data name="OfflineReady" xml:space="preserve"><value>Local infrastructure is ready. No AI account or network connection is required.</value></data>
   <data name="AiStorageUnavailable" xml:space="preserve"><value>AI storage is unavailable. Local core remains available.</value></data>
   <data name="SettingsRecovered" xml:space="preserve"><value>Invalid settings were preserved and safe defaults restored.</value></data>
@@ -18,7 +18,7 @@
   <data name="TogglePet" xml:space="preserve"><value>Toggle pet</value></data>
   <data name="OpenControlCenter" xml:space="preserve"><value>Open control center</value></data>
   <data name="ExitApplication" xml:space="preserve"><value>Exit application</value></data>
-  <data name="PetTitle" xml:space="preserve"><value>DesktopPet · Phase 3</value></data>
+  <data name="PetTitle" xml:space="preserve"><value>DesktopPet · Phase 4</value></data>
   <data name="PetHint" xml:space="preserve"><value>Drag to move · Double-click for control center · Right-click for menu</value></data>
   <data name="CommandFailed" xml:space="preserve"><value>Window operation or state save failed. Check local logs and retry before exiting.</value></data>
   <data name="CharacterTools" xml:space="preserve"><value>Character diagnostics</value></data>
@@ -42,4 +42,22 @@
   <data name="RuntimeSummary" xml:space="preserve"><value>State {0}/{1} · animation {2}; Mood {3} / Energy {4} / Boredom {5} / Affinity {6}; Running {7} / Visible {8} / Interactions {9}</value></data>
   <data name="RuntimeScore" xml:space="preserve"><value>{0}: {1:F2} · filter {2} · cooldown {3:F1}s; base {4:F2} × character {5:F2} × emotion {6:F2} × context {7:F2} × user {8:F2} × recent {9:F2}</value></data>
   <data name="RuntimeRecent" xml:space="preserve"><value>Recent actions: {0}</value></data>
+  <data name="MovementTools" xml:space="preserve"><value>Phase 4 · Movement diagnostics</value></data>
+  <data name="MovementHint" xml:space="preserve"><value>Mode / permitted displays / motion style / hybrid strategy. Selected displays: comma-separated device IDs listed below. Apply explicitly permits the chosen screen scope. Drag updates Home.</value></data>
+  <data name="MovementApply" xml:space="preserve"><value>Apply movement settings</value></data>
+  <data name="MovementFixed" xml:space="preserve"><value>Fixed</value></data>
+  <data name="MovementLocal" xml:space="preserve"><value>Small range</value></data>
+  <data name="MovementDesktop" xml:space="preserve"><value>Full desktop</value></data>
+  <data name="MovementHybrid" xml:space="preserve"><value>Hybrid</value></data>
+  <data name="DisplayPrimary" xml:space="preserve"><value>Primary only</value></data>
+  <data name="DisplayCurrent" xml:space="preserve"><value>Current display</value></data>
+  <data name="DisplaySelected" xml:space="preserve"><value>Selected displays</value></data>
+  <data name="DisplayAll" xml:space="preserve"><value>All displays</value></data>
+  <data name="MotionQuiet" xml:space="preserve"><value>Quiet</value></data>
+  <data name="MotionNatural" xml:space="preserve"><value>Natural</value></data>
+  <data name="MotionLively" xml:space="preserve"><value>Lively</value></data>
+  <data name="SetInteractive" xml:space="preserve"><value>Restore interaction</value></data>
+  <data name="ToggleClickThrough" xml:space="preserve"><value>Toggle click-through</value></data>
+  <data name="TemporaryClickThrough" xml:space="preserve"><value>Pass through for 8 seconds</value></data>
+  <data name="MovementSummary" xml:space="preserve"><value>Snapshot: moving {0}; Home {1}; target {2}; facing {3}; input {4}</value></data>
 </root>
