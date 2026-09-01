@@ -10,19 +10,22 @@ using DesktopPet.Application.Characters;
 using DesktopPet.Application.Runtime;
 using DesktopPet.Infrastructure.Characters;
 using DesktopPet.Domain.Pets;
+using DesktopPet.Application.Configuration;
+using DesktopPet.Application.Hotkeys;
 
 namespace DesktopPet.Tests.Integration;
 
 public sealed class WindowEventBridgeTests
 {
     [Fact]
-    public void TrayAndViewModelIntentsReachTheSameRegistryAndDetachOnDispose()
+    public async Task TrayAndViewModelIntentsReachTheSameRegistryAndDetachOnDispose()
     {
         using var env = new TestEnvironment();
         var pet = new EventPort();
         var control = new EventPort();
         var tray = new EventPort();
-        var model = new MainWindowViewModel(new ResourceTextLocalizer("en-US"));
+        var text = new ResourceTextLocalizer("en-US");
+        var model = new MainWindowViewModel(text);
         var calls = new List<CommandId>();
         var commands = new CommandRegistry(new[] { CommandId.ShowPet, CommandId.HidePet, CommandId.OpenControlCenter,
             CommandId.Exit, CommandId.TogglePetVisibility, CommandId.CloseControlCenter }.Select(id => new RecordingCommand(id, calls)));
@@ -32,7 +35,10 @@ public sealed class WindowEventBridgeTests
             characters.Settings, new NullSurface(), characters.Exceptions, TimeProvider.System);
         using var runtime = new PetRuntime(presentation, characters.Settings, new CharacterBehaviorProfileReader(characters.Settings, characters.Exceptions),
             TimeProvider.System, new(), new SeededRandomSource(1), characters.Exceptions, env.Logger);
-        using var bridge = new WindowEventBridge(pet, control, tray, model, commands, windows, new ExceptionHandler(env.Logger, TimeProvider.System), new PetHost(runtime));
+        using var hotkeys = new HotkeysViewModel(characters.Settings, text, characters.Exceptions);
+        await using var coordinator = new HotkeyCoordinator(new NoHotkeys(), commands, characters.Settings, characters.Exceptions);
+        using var bridge = new WindowEventBridge(pet, control, tray, model, commands, windows,
+            new ExceptionHandler(env.Logger, TimeProvider.System), new PetHost(runtime), hotkeys, coordinator);
         bridge.Attach();
         bridge.Attach();
         foreach (var item in TrayMenuDefinition.Create()) tray.EmitCommand(item.Command);
@@ -50,6 +56,17 @@ public sealed class WindowEventBridgeTests
         pet.EmitDrag();
         Assert.Equal(6, calls.Count);
         Assert.Equal(2, windows.PositionSaves);
+    }
+
+    private sealed class NoHotkeys : IHotkeyService
+    {
+        public IReadOnlyCollection<CommandId> RegisteredCommands => [];
+        public event EventHandler<HotkeyInvokedEventArgs>? Invoked { add { } remove { } }
+        public Task<HotkeyRegistrationResult> RegisterAsync(HotkeyCommandBinding binding, CancellationToken ct) =>
+            Task.FromResult(new HotkeyRegistrationResult(HotkeyRegistrationStatus.Registered));
+        public Task UnregisterAsync(CommandId command, CancellationToken ct) => Task.CompletedTask;
+        public Task UnregisterAllAsync(CancellationToken ct) => Task.CompletedTask;
+        public void Dispose() { }
     }
 
     private sealed class RecordingCommand(CommandId id, List<CommandId> calls) : IAppCommand
@@ -79,6 +96,7 @@ public sealed class WindowEventBridgeTests
         public Task TogglePetAsync(CancellationToken ct) => Task.CompletedTask;
         public Task ShowControlCenterAsync(CancellationToken ct) => Task.CompletedTask;
         public Task CloseControlCenterAsync(CancellationToken ct) => Task.CompletedTask;
+        public Task SetTopmostAsync(bool topmost, CancellationToken ct) => Task.CompletedTask;
         public Task ExitAsync(CancellationToken ct) => Task.CompletedTask;
         public Task StopAsync(CancellationToken ct) => Task.CompletedTask;
     }

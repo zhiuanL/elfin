@@ -22,6 +22,9 @@ public static class DependencyInjection
         services.AddSingleton<ITrayService, WindowsTrayService>();
         services.AddSingleton<IPngInspector, WindowsPngInspector>();
         services.AddSingleton<ICharacterPackagePicker, WindowsCharacterPackagePicker>();
+        services.AddSingleton<ICharacterPreviewLoader, CharacterPreviewLoader>();
+        services.AddSingleton<IHotkeyService, WindowsGlobalHotkeyService>();
+        services.AddSingleton<IUserConfirmationService, WindowsConfirmationService>();
         services.AddSingleton<WpfAnimationSurface>();
         services.AddSingleton<IAnimationSurface>(provider => provider.GetRequiredService<WpfAnimationSurface>());
         services.AddSingleton<ICharacterImageSource>(provider => provider.GetRequiredService<WpfAnimationSurface>());

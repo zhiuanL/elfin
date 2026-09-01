@@ -60,4 +60,85 @@
   <data name="ToggleClickThrough" xml:space="preserve"><value>切换鼠标穿透</value></data>
   <data name="TemporaryClickThrough" xml:space="preserve"><value>临时穿透 8 秒</value></data>
   <data name="MovementSummary" xml:space="preserve"><value>快照：移动中 {0}；Home {1}；目标 {2}；朝向 {3}；鼠标模式 {4}</value></data>
+  <data name="NavHome" xml:space="preserve"><value>首页</value></data>
+  <data name="NavCharacters" xml:space="preserve"><value>角色</value></data>
+  <data name="NavSettings" xml:space="preserve"><value>设置</value></data>
+  <data name="NavHotkeys" xml:space="preserve"><value>快捷键</value></data>
+  <data name="NavDiagnostics" xml:space="preserve"><value>诊断</value></data>
+  <data name="HomeTitle" xml:space="preserve"><value>首页</value></data>
+  <data name="HomeSubtitle" xml:space="preserve"><value>一眼查看桌面伙伴与常用控制。</value></data>
+  <data name="CurrentCharacterCard" xml:space="preserve"><value>当前角色</value></data>
+  <data name="PetStatusCard" xml:space="preserve"><value>小精灵状态</value></data>
+  <data name="MovementModeCard" xml:space="preserve"><value>移动方式</value></data>
+  <data name="QuickActionsCard" xml:space="preserve"><value>快捷操作</value></data>
+  <data name="NoCharacter" xml:space="preserve"><value>尚未加载角色</value></data>
+  <data name="CharacterActiveBadge" xml:space="preserve"><value>使用中</value></data>
+  <data name="RuntimeRunning" xml:space="preserve"><value>运行中</value></data>
+  <data name="RuntimeStopped" xml:space="preserve"><value>已停止</value></data>
+  <data name="SessionSummary" xml:space="preserve"><value>状态：{0} · 互动次数：{1}</value></data>
+  <data name="OpenCharacters" xml:space="preserve"><value>管理角色</value></data>
+  <data name="OpenSettings" xml:space="preserve"><value>打开设置</value></data>
+  <data name="CharactersTitle" xml:space="preserve"><value>角色管理</value></data>
+  <data name="CharactersSubtitle" xml:space="preserve"><value>预览、校验、导入、启用或删除本地角色包。</value></data>
+  <data name="CharacterPreview" xml:space="preserve"><value>预览</value></data>
+  <data name="CharacterDescription" xml:space="preserve"><value>说明</value></data>
+  <data name="CharacterPackageVersion" xml:space="preserve"><value>角色包版本</value></data>
+  <data name="CharacterCapabilities" xml:space="preserve"><value>动画能力</value></data>
+  <data name="CharacterValidationResults" xml:space="preserve"><value>校验结果</value></data>
+  <data name="CharacterRemoveConfirm" xml:space="preserve"><value>确定删除角色“{0}”吗？此操作无法撤销。</value></data>
+  <data name="CharacterRemoveProtected" xml:space="preserve"><value>当前使用中的角色不能删除，请先启用其他角色。</value></data>
+  <data name="CharacterImportAndActivate" xml:space="preserve"><value>导入并启用</value></data>
+  <data name="CharacterImportSucceeded" xml:space="preserve"><value>角色已导入并启用。</value></data>
+  <data name="ConfirmTitle" xml:space="preserve"><value>确认操作</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="No" xml:space="preserve"><value>否</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>设置</value></data>
+  <data name="SettingsSubtitle" xml:space="preserve"><value>配置陪伴、移动、交互与外观；离线核心不依赖网络。</value></data>
+  <data name="GeneralSettings" xml:space="preserve"><value>通用</value></data>
+  <data name="PetSettings" xml:space="preserve"><value>小精灵</value></data>
+  <data name="MovementSettingsLabel" xml:space="preserve"><value>移动</value></data>
+  <data name="InteractionSettings" xml:space="preserve"><value>交互</value></data>
+  <data name="AppearanceSettings" xml:space="preserve"><value>外观</value></data>
+  <data name="AdvancedSettings" xml:space="preserve"><value>高级</value></data>
+  <data name="Language" xml:space="preserve"><value>语言</value></data>
+  <data name="CloseBehavior" xml:space="preserve"><value>关闭控制中心时</value></data>
+  <data name="CloseHideToTray" xml:space="preserve"><value>隐藏到托盘</value></data>
+  <data name="CloseExit" xml:space="preserve"><value>退出程序</value></data>
+  <data name="PetVisible" xml:space="preserve"><value>显示小精灵</value></data>
+  <data name="AlwaysOnTop" xml:space="preserve"><value>始终置顶</value></data>
+  <data name="UpdateHomeOnDrag" xml:space="preserve"><value>拖拽结束后更新 Home</value></data>
+  <data name="HybridStrategy" xml:space="preserve"><value>混合策略</value></data>
+  <data name="SelectedDisplays" xml:space="preserve"><value>指定显示器</value></data>
+  <data name="CurrentMouseMode" xml:space="preserve"><value>当前鼠标模式</value></data>
+  <data name="ApplyGeneral" xml:space="preserve"><value>应用</value></data>
+  <data name="ApplyMovement" xml:space="preserve"><value>应用移动设置</value></data>
+  <data name="ApplyInteraction" xml:space="preserve"><value>应用交互设置</value></data>
+  <data name="ApplyAppearance" xml:space="preserve"><value>应用外观</value></data>
+  <data name="SettingsSaved" xml:space="preserve"><value>设置已保存。</value></data>
+  <data name="SettingsFailed" xml:space="preserve"><value>设置保存失败，请检查本地日志。</value></data>
+  <data name="ThemeSystem" xml:space="preserve"><value>跟随系统</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>浅色</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>深色</value></data>
+  <data name="AppVersion" xml:space="preserve"><value>应用版本</value></data>
+  <data name="SettingsSchema" xml:space="preserve"><value>设置架构版本</value></data>
+  <data name="HotkeysTitle" xml:space="preserve"><value>全局快捷键</value></data>
+  <data name="HotkeysSubtitle" xml:space="preserve"><value>启用或修改托盘、键盘与未来工具调用共同复用的命令。</value></data>
+  <data name="HotkeyEnabled" xml:space="preserve"><value>启用</value></data>
+  <data name="HotkeyCommand" xml:space="preserve"><value>命令</value></data>
+  <data name="HotkeyModifiers" xml:space="preserve"><value>修饰键</value></data>
+  <data name="HotkeyKey" xml:space="preserve"><value>按键</value></data>
+  <data name="HotkeyApply" xml:space="preserve"><value>应用快捷键</value></data>
+  <data name="HotkeyReset" xml:space="preserve"><value>恢复默认</value></data>
+  <data name="HotkeySaved" xml:space="preserve"><value>快捷键已保存并注册。</value></data>
+  <data name="HotkeyConflict" xml:space="preserve"><value>快捷键已被占用或被 Windows 拒绝。</value></data>
+  <data name="HotkeyInvalid" xml:space="preserve"><value>每个已启用快捷键都需要修饰键，且组合不能重复。</value></data>
+  <data name="HotkeyShowPet" xml:space="preserve"><value>显示小精灵</value></data>
+  <data name="HotkeyHidePet" xml:space="preserve"><value>隐藏小精灵</value></data>
+  <data name="HotkeyOpenControlCenter" xml:space="preserve"><value>打开控制中心</value></data>
+  <data name="HotkeyTogglePet" xml:space="preserve"><value>切换小精灵显示</value></data>
+  <data name="HotkeyToggleClickThrough" xml:space="preserve"><value>切换鼠标穿透</value></data>
+  <data name="HotkeyTemporaryClickThrough" xml:space="preserve"><value>临时鼠标穿透</value></data>
+  <data name="DiagnosticsTitle" xml:space="preserve"><value>诊断</value></data>
+  <data name="DiagnosticsSubtitle" xml:space="preserve"><value>保留自前序阶段的本地开发诊断工具。</value></data>
+  <data name="OfflineCoreStatus" xml:space="preserve"><value>离线小精灵核心独立于 AI 和网络服务。</value></data>
 </root>

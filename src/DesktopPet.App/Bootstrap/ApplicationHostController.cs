@@ -4,6 +4,7 @@ using DesktopPet.Application.Contracts;
 using DesktopPet.Application.Diagnostics;
 using DesktopPet.Application.Localization;
 using DesktopPet.Application.Storage;
+using DesktopPet.Application.Navigation;
 using DesktopPet.Infrastructure.Diagnostics;
 using DesktopPet.Infrastructure.Localization;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +43,7 @@ public sealed class ApplicationHostController(System.Windows.Application app) : 
             await _desktop.StartAsync(_lifetime.Token);
             if (_smokeTest)
             {
+                await ExerciseControlCenterPagesAsync();
                 await _desktop.WaitForRenderAsync(_lifetime.Token);
                 if (options.SmokeDurationSeconds > 0)
                     await Task.Delay(TimeSpan.FromSeconds(options.SmokeDurationSeconds), _lifetime.Token);
@@ -54,6 +56,18 @@ public sealed class ApplicationHostController(System.Windows.Application app) : 
             ReportFailure(exception, ErrorCode.StartupFailed, ErrorOrigin.Startup);
             RequestShutdown(1);
         }
+    }
+
+    private async Task ExerciseControlCenterPagesAsync()
+    {
+        var navigation = _host!.Services.GetRequiredService<INavigationService>();
+        foreach (var page in new[] { AppPage.Home, AppPage.Characters, AppPage.Settings, AppPage.Hotkeys, AppPage.Diagnostics })
+        {
+            navigation.Navigate(page);
+            await app.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Loaded);
+        }
+        navigation.Navigate(AppPage.Home);
+        await app.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Loaded);
     }
 
     public async void RequestShutdown(int exitCode = 0)

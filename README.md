@@ -2,7 +2,7 @@
 
 Windows 桌面小精灵：桌面陪伴优先，其次办公效率，再次 AI 助手。
 
-当前为 **Phase 4 安全自主移动（PARTIAL：待人工移动验收）**。Phase 0–3 基线已确认通过。已接入四种移动模式、Home、运动预设、显示器策略、朝向/镜像与鼠标穿透基础；保留已有角色、行为与窗口能力，没有实现 Phase 5+ 的正式控制中心、办公或 AI 业务。
+当前为 **Phase 5 控制中心与设置体验**。Phase 0–4 基线已确认通过。已提供首页、正式角色管理、分类设置、全局快捷键、浅色/深色/系统主题及中英文切换；保留已有角色、行为、移动与窗口能力，没有实现 Phase 6+ 的办公或 AI 业务。
 
 ## 文档与结构
 
@@ -14,6 +14,8 @@ Windows 桌面小精灵：桌面陪伴优先，其次办公效率，再次 AI �
 - [Phase 3 开发报告](docs/Phase-3-开发报告.md)
 - [Phase 4 开发报告](docs/Phase-4-开发报告.md)
 - [Phase 4 人工测试文档](docs/Phase-4-人工测试文档.md)
+- [Phase 5 开发报告](docs/Phase-5-开发报告.md)
+- [Phase 5 人工测试文档](docs/Phase-5-人工测试文档.md)
 - [角色包 Schema 1](docs/character-manifest.schema.json)
 - Solution：DesktopPet.sln；应用项目位于 src/，测试项目位于 tests/。
 
@@ -30,11 +32,11 @@ Windows x64 + .NET SDK 10.0.400（见 global.json）。若本机没有 SDK，可
 ## 验证
 
 ```powershell
-.\tools\Verify-Phase4.ps1
-.\tools\Verify-Phase4.ps1 -Configuration Release
+.\tools\Verify-Phase5.ps1
+.\tools\Verify-Phase5.ps1 -Configuration Release
 ```
 
-脚本执行 locked restore、build、test，保留 Phase 0–3 回归，并增加运动数学、四模式/多屏策略、虚拟时间取消、Home 持久化与穿透测试。Debug/Release 各 256 项通过，0 警告、0 错误；结果位于 artifacts/TestResults/。真实 WPF 测试可能短暂显示窗口、文件选择框与托盘图标。首次恢复依赖需要网络，应用启动不需要网络。自动测试和三分钟真实进程运行检查不能替代视觉、点击、拖拽和托盘的人工验收。
+脚本执行 locked restore、build、test，保留 Phase 0–4 回归，并增加导航、schema 6、主题/快捷键设置、冲突回滚、命令分发与释放测试。当前 Debug 共 263 项通过；最终 Debug/Release 结果见 Phase 5 开发报告和 artifacts/TestResults/。真实 WPF 测试可能短暂显示窗口与托盘图标。首次恢复依赖需要网络，应用启动不需要网络；自动测试不能替代视觉、系统快捷键和多屏/DPI 人工验收。
 
 使用已安装且符合 global.json 的 SDK 时，也可直接执行：
 
@@ -44,7 +46,7 @@ dotnet build DesktopPet.sln --no-restore
 dotnet test DesktopPet.sln --no-build --no-restore
 ```
 
-## 运行 Phase 4
+## 运行 Phase 5
 
 推荐使用启动脚本（默认 Debug + Portable，先还原并构建）：
 
@@ -67,15 +69,15 @@ $env:DOTNET_ROOT = (Resolve-Path .\.tools\dotnet).Path
 
 首次启动会安装随构建分发的两个“开发测试”角色包；这是测试素材，不是正式用户角色。空配置优先选择动作更完整的橙色 Standard，已有有效角色选择保持不变。蓝色 Basic 仅有静态 idle，缺少的行为被过滤；要验收 blink/happy/rest，请在角色诊断中激活 Standard。原始 resource/ 不会被修改。
 
-控制中心的“角色开发诊断”点击“选择 ZIP…”或“选择文件夹…”，在 Windows 原生选择框中选择角色包 ZIP 或包含 manifest.json 的包根目录。路径自动回填后点击“校验”或“导入”；选择本身不会安装或激活，取消保留原路径。仍支持手工粘贴绝对路径。
+控制中心“角色”页点击“选择 ZIP…”，在 Windows 资源管理器选择角色包。路径自动回填后可先校验，再“导入并启用”；选择本身不会安装，取消会保留原状态。文件夹选择与语义播放等开发工具仍保留在“诊断”页。
 
-导入后选择角色并点击“激活”，输入 idle / blink / happy / rest / talking 可临时请求语义播放，结束后恢复自主调度。单击产生情绪反馈，拖拽期间暂停行为。下方“行为开发诊断”显示状态、情绪、最近动作及上次决策的评分/冷却快照，不是实时倒计时。移除当前角色前必须先激活其他角色。同 ID 包拒绝覆盖；正式角色管理页面留待 Phase 5。
+角色页提供预览、等级/完整度、能力、校验诊断、启用和删除。当前角色不可删除，删除其他角色必须二次确认；同 ID 包拒绝覆盖。诊断页可输入 idle / blink / happy / rest / talking 临时请求语义播放，并显示状态、情绪、最近动作及上次决策评分。
 
 拖动小精灵移动，双击打开控制中心，右键打开常用菜单。控制中心关闭默认隐藏到托盘；小精灵关闭请求仅隐藏小精灵。真正退出请使用托盘或控制中心的“退出程序”。窗口状态、物理像素位置和激活角色标识由 Settings Service 保存。
 
-配置 schema 1/2/3/4 自动升级为 5，保留备份及窗口偏好；Home、显示器选择和运动偏好经 Settings Service 持久化。稳定 Mood/Energy/Affinity 按角色保存，Boredom、帧号、冷却和近期动作不跨启动恢复。controlCenterCloseBehavior 可选 HideToTray（默认）或 Exit。请勿运行多个实例共用同一数据目录；全应用多实例互斥尚未纳入本阶段。
+配置 schema 1–5 自动升级为 6，保留备份及既有偏好；新增主题和全局快捷键强类型配置。Home、显示器、运动、语言、关闭行为、可见性和置顶均经 Settings Service 持久化。请勿运行多个实例共用同一数据目录；全应用多实例互斥尚未纳入本阶段。
 
-“Phase 4 · 移动开发诊断”中选择固定 / 小范围 / 全桌面 / 混合，点击“应用移动设置”。默认混合 + 当前显示器 + 自然：围绕 Home 活动，空闲两分钟后偶尔扩大范围；点击互动可触发后续返回 Home，拖动结束更新 Home。自主行为由调度器择机执行，不是点击设置后立即移动。固定模式只允许手动拖动。
+在“设置 → 移动”选择固定 / 小范围 / 全桌面 / 混合并应用。默认混合 + 当前显示器 + 自然：围绕 Home 活动，空闲后偶尔扩大范围；“拖拽后更新 Home”可单独关闭。自主行为由调度器择机执行，不是点击设置后立即移动；固定模式只允许手动拖动。
 
 跨屏需明确选择“所有显示器”，或“指定显示器”并填写诊断区显示的设备 ID（逗号分隔）。仅共享连续矩形工作区的相邻屏幕允许直线跨越；存在空洞、不同工作区边缘或 DPI 变化时保守取消/校正，不穿越不可见区域。没有任何指定屏幕在线时暂停自主移动并保留可见窗口。
 

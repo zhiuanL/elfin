@@ -8,6 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 using DesktopPet.Application.Runtime;
 using DesktopPet.Domain.Pets;
 using DesktopPet.Application.Movement;
+using DesktopPet.Application.Navigation;
+using DesktopPet.Application.Hotkeys;
 
 namespace DesktopPet.Application;
 
@@ -19,6 +21,8 @@ public static class DependencyInjection
         services.AddSingleton<IExceptionHandler, ExceptionHandler>();
         services.AddSingleton<IRecoveryCoordinator, RecoveryCoordinator>();
         services.AddSingleton<ICommandRegistry, CommandRegistry>();
+        services.AddSingleton<INavigationService, ControlCenterNavigationService>();
+        services.AddSingleton<IHotkeyCoordinator, HotkeyCoordinator>();
         services.AddSingleton<ICharacterPackageService, CharacterManager>();
         services.AddSingleton<CharacterPresentationService>();
         services.AddSingleton<RuntimePolicy>();
@@ -39,7 +43,8 @@ public static class DependencyInjection
         foreach (var id in new[] { CommandId.SetInteractive, CommandId.SetClickThrough, CommandId.ToggleClickThrough, CommandId.TemporaryClickThrough })
             services.AddSingleton<IAppCommand>(provider => new MouseInteractionCommand(id, provider.GetRequiredService<IMouseInteractionService>()));
         foreach (var id in new[] { CommandId.ShowPet, CommandId.HidePet, CommandId.TogglePetVisibility,
-            CommandId.OpenControlCenter, CommandId.CloseControlCenter, CommandId.Exit })
+            CommandId.OpenControlCenter, CommandId.CloseControlCenter, CommandId.Exit,
+            CommandId.EnableTopmost, CommandId.DisableTopmost })
             services.AddSingleton<IAppCommand>(provider => new WindowCommand(id, provider.GetRequiredService<IWindowService>()));
         return services;
     }

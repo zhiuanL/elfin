@@ -48,7 +48,7 @@ public sealed class MovementIntegrationTests
         const string original = """{"schemaVersion":4,"movementMode":"Fixed","motionStyle":"Quiet","petWindow":{"position":{"origin":{"x":-600,"y":-300},"displayId":"left"}},"emotions":[{"characterId":"dev.elfin.basic","mood":77,"energy":64,"affinity":40}]}""";
         await File.WriteAllTextAsync(path, original);
         var result = await context.Settings.LoadAsync(default);
-        Assert.Equal(SettingsLoadStatus.Migrated, result.Status); Assert.Equal(5, result.Settings.SchemaVersion);
+        Assert.Equal(SettingsLoadStatus.Migrated, result.Status); Assert.Equal(AppSettings.CurrentSchemaVersion, result.Settings.SchemaVersion);
         Assert.Equal(MovementMode.Fixed, result.Settings.MovementMode); Assert.Equal(MotionStyle.Quiet, result.Settings.MotionStyle);
         Assert.Equal(-600, result.Settings.PetWindow.Position!.Origin.X); Assert.Equal(77, result.Settings.Emotions.Single().Mood);
         Assert.Equal(original, await File.ReadAllTextAsync(path + ".bak"));

@@ -60,4 +60,85 @@
   <data name="ToggleClickThrough" xml:space="preserve"><value>Toggle click-through</value></data>
   <data name="TemporaryClickThrough" xml:space="preserve"><value>Pass through for 8 seconds</value></data>
   <data name="MovementSummary" xml:space="preserve"><value>Snapshot: moving {0}; Home {1}; target {2}; facing {3}; input {4}</value></data>
+  <data name="NavHome" xml:space="preserve"><value>Home</value></data>
+  <data name="NavCharacters" xml:space="preserve"><value>Characters</value></data>
+  <data name="NavSettings" xml:space="preserve"><value>Settings</value></data>
+  <data name="NavHotkeys" xml:space="preserve"><value>Hotkeys</value></data>
+  <data name="NavDiagnostics" xml:space="preserve"><value>Diagnostics</value></data>
+  <data name="HomeTitle" xml:space="preserve"><value>Home</value></data>
+  <data name="HomeSubtitle" xml:space="preserve"><value>Your companion and the essentials at a glance.</value></data>
+  <data name="CurrentCharacterCard" xml:space="preserve"><value>Current character</value></data>
+  <data name="PetStatusCard" xml:space="preserve"><value>Pet status</value></data>
+  <data name="MovementModeCard" xml:space="preserve"><value>Movement</value></data>
+  <data name="QuickActionsCard" xml:space="preserve"><value>Quick actions</value></data>
+  <data name="NoCharacter" xml:space="preserve"><value>No character loaded</value></data>
+  <data name="CharacterActiveBadge" xml:space="preserve"><value>Active</value></data>
+  <data name="RuntimeRunning" xml:space="preserve"><value>Running</value></data>
+  <data name="RuntimeStopped" xml:space="preserve"><value>Stopped</value></data>
+  <data name="SessionSummary" xml:space="preserve"><value>State: {0} · Interactions: {1}</value></data>
+  <data name="OpenCharacters" xml:space="preserve"><value>Manage characters</value></data>
+  <data name="OpenSettings" xml:space="preserve"><value>Open settings</value></data>
+  <data name="CharactersTitle" xml:space="preserve"><value>Character manager</value></data>
+  <data name="CharactersSubtitle" xml:space="preserve"><value>Preview, validate, import, activate or remove local character packages.</value></data>
+  <data name="CharacterPreview" xml:space="preserve"><value>Preview</value></data>
+  <data name="CharacterDescription" xml:space="preserve"><value>Description</value></data>
+  <data name="CharacterPackageVersion" xml:space="preserve"><value>Package version</value></data>
+  <data name="CharacterCapabilities" xml:space="preserve"><value>Animation capabilities</value></data>
+  <data name="CharacterValidationResults" xml:space="preserve"><value>Validation results</value></data>
+  <data name="CharacterRemoveConfirm" xml:space="preserve"><value>Remove character “{0}”? This cannot be undone.</value></data>
+  <data name="CharacterRemoveProtected" xml:space="preserve"><value>The active character cannot be removed. Activate another character first.</value></data>
+  <data name="CharacterImportAndActivate" xml:space="preserve"><value>Import and activate</value></data>
+  <data name="CharacterImportSucceeded" xml:space="preserve"><value>Character imported and activated.</value></data>
+  <data name="ConfirmTitle" xml:space="preserve"><value>Confirm action</value></data>
+  <data name="Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>Settings</value></data>
+  <data name="SettingsSubtitle" xml:space="preserve"><value>Configure companion, movement, interaction and appearance without leaving the offline core.</value></data>
+  <data name="GeneralSettings" xml:space="preserve"><value>General</value></data>
+  <data name="PetSettings" xml:space="preserve"><value>Companion</value></data>
+  <data name="MovementSettingsLabel" xml:space="preserve"><value>Movement</value></data>
+  <data name="InteractionSettings" xml:space="preserve"><value>Interaction</value></data>
+  <data name="AppearanceSettings" xml:space="preserve"><value>Appearance</value></data>
+  <data name="AdvancedSettings" xml:space="preserve"><value>Advanced</value></data>
+  <data name="Language" xml:space="preserve"><value>Language</value></data>
+  <data name="CloseBehavior" xml:space="preserve"><value>When closing control center</value></data>
+  <data name="CloseHideToTray" xml:space="preserve"><value>Hide to tray</value></data>
+  <data name="CloseExit" xml:space="preserve"><value>Exit application</value></data>
+  <data name="PetVisible" xml:space="preserve"><value>Pet visible</value></data>
+  <data name="AlwaysOnTop" xml:space="preserve"><value>Always on top</value></data>
+  <data name="UpdateHomeOnDrag" xml:space="preserve"><value>Update Home after drag</value></data>
+  <data name="HybridStrategy" xml:space="preserve"><value>Hybrid strategy</value></data>
+  <data name="SelectedDisplays" xml:space="preserve"><value>Selected displays</value></data>
+  <data name="CurrentMouseMode" xml:space="preserve"><value>Current mouse mode</value></data>
+  <data name="ApplyGeneral" xml:space="preserve"><value>Apply</value></data>
+  <data name="ApplyMovement" xml:space="preserve"><value>Apply movement</value></data>
+  <data name="ApplyInteraction" xml:space="preserve"><value>Apply interaction</value></data>
+  <data name="ApplyAppearance" xml:space="preserve"><value>Apply appearance</value></data>
+  <data name="SettingsSaved" xml:space="preserve"><value>Settings saved.</value></data>
+  <data name="SettingsFailed" xml:space="preserve"><value>Settings could not be saved. Check local logs.</value></data>
+  <data name="ThemeSystem" xml:space="preserve"><value>Use system theme</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>Dark</value></data>
+  <data name="AppVersion" xml:space="preserve"><value>Application version</value></data>
+  <data name="SettingsSchema" xml:space="preserve"><value>Settings schema</value></data>
+  <data name="HotkeysTitle" xml:space="preserve"><value>Global hotkeys</value></data>
+  <data name="HotkeysSubtitle" xml:space="preserve"><value>Enable or change shared commands used by the tray, keyboard and future tool callers.</value></data>
+  <data name="HotkeyEnabled" xml:space="preserve"><value>Enabled</value></data>
+  <data name="HotkeyCommand" xml:space="preserve"><value>Command</value></data>
+  <data name="HotkeyModifiers" xml:space="preserve"><value>Modifiers</value></data>
+  <data name="HotkeyKey" xml:space="preserve"><value>Key</value></data>
+  <data name="HotkeyApply" xml:space="preserve"><value>Apply hotkeys</value></data>
+  <data name="HotkeyReset" xml:space="preserve"><value>Restore defaults</value></data>
+  <data name="HotkeySaved" xml:space="preserve"><value>Hotkeys saved and registered.</value></data>
+  <data name="HotkeyConflict" xml:space="preserve"><value>A hotkey is already in use or was rejected by Windows.</value></data>
+  <data name="HotkeyInvalid" xml:space="preserve"><value>Each enabled hotkey needs a modifier and a unique valid key.</value></data>
+  <data name="HotkeyShowPet" xml:space="preserve"><value>Show pet</value></data>
+  <data name="HotkeyHidePet" xml:space="preserve"><value>Hide pet</value></data>
+  <data name="HotkeyOpenControlCenter" xml:space="preserve"><value>Open control center</value></data>
+  <data name="HotkeyTogglePet" xml:space="preserve"><value>Toggle pet visibility</value></data>
+  <data name="HotkeyToggleClickThrough" xml:space="preserve"><value>Toggle click-through</value></data>
+  <data name="HotkeyTemporaryClickThrough" xml:space="preserve"><value>Temporary click-through</value></data>
+  <data name="DiagnosticsTitle" xml:space="preserve"><value>Diagnostics</value></data>
+  <data name="DiagnosticsSubtitle" xml:space="preserve"><value>Developer-facing local diagnostics retained from earlier phases.</value></data>
+  <data name="OfflineCoreStatus" xml:space="preserve"><value>Offline pet core is independent from AI and network services.</value></data>
 </root>

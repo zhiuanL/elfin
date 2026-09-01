@@ -72,6 +72,16 @@ public sealed class WindowLifecycleService(ISettingsService settings, IPetWindow
         await PersistAsync(ct);
     }, ct);
 
+    public Task SetTopmostAsync(bool topmost, CancellationToken ct) => RunAsync(async () =>
+    {
+        RequireInitialized();
+        pet.SetTopmost(topmost);
+        await settings.UpdateAsync(current => current with
+        {
+            PetWindow = current.PetWindow with { Topmost = topmost }
+        }, ct);
+    }, ct);
+
     public Task ExitAsync(CancellationToken ct) => dispatcher.InvokeAsync(() =>
     {
         ct.ThrowIfCancellationRequested();

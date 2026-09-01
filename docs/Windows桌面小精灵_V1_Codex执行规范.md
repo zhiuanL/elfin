@@ -404,3 +404,14 @@ Codex 每次只处理一个 Phase，并输出：
 - Settings schema 5 添加 MovementSettings：Home、拖动更新开关、指定显示器、用户显式风格及参数覆盖。schema 1–4 迁移保留原文件备份。显式用户风格覆盖角色推荐，未显式选择时允许使用角色推荐；系统硬限制始终生效。双库 Schema 不变。
 - 指针按下在 Windows 层同步撤销自主位移权限，再由 Runtime 取消并等待旧移动/动画。隐藏、切换、显示器变化、退出同样先取消旧任务；拖动结束夹取窗口并按配置更新 Home。
 - Interactive/ClickThrough/TemporaryPassThrough 由统一 IMouseInteractionService 与显式命令暴露；Windows 仅切换 WS_EX_TRANSPARENT，保留其他样式。临时 8 秒后恢复，托盘保留恢复入口，隐藏/退出/重启恢复可交互。未加入智能全屏/Focus 穿透、快捷键或完整设置页面。
+
+## 25. Phase 5 实施契约注释（2026-08-30）
+
+- Phase 4 人工验收由用户确认通过；本阶段只实现控制中心与设置体验，不进入 Phase 6 办公功能。
+- MainWindow 仅作为导航壳，Home/Characters/Settings/Hotkeys/Diagnostics 各自使用独立 ViewModel 与 UserControl。页面不直接访问 JSON、SQLite、文件系统或 Win32；角色预览由 Windows 适配器安全加载。
+- 首页、设置页通过既有 WindowEventBridge 将意图送入 ICommandRegistry；新增 EnableTopmost/DisableTopmost 也走统一命令。构造期不注入会反向创建 MainWindow 的 WindowService/CommandRegistry，避免 UI 组合根循环。
+- 角色管理复用 ICharacterPackageService/ICharacterPresentation：ZIP 选择后显式校验，再导入并激活；同 ID 不覆盖，当前角色不可删除，非当前角色删除使用 IUserConfirmationService 二次确认。未实现 Character Runtime 新格式。
+- Settings schema 6 增加 AppearanceSettings 与强类型 HotkeySettings；schema 1–5 仅向前升级并保留备份。语言、关闭行为、可见性、置顶、移动/交互、主题均经现有应用服务持久化，API Key 不进入配置。
+- IHotkeyService 是 Windows RegisterHotKey 适配器；IHotkeyCoordinator 负责注册、冲突回滚、持久化、命令分发和退出释放。启用组合必须含修饰键且互不重复；Windows 403/网络重试规则与此离线能力无关。
+- zh-CN/en-US 通过 ITextLocalizer 事件即时刷新；System/Light/Dark 由 IAppearanceService 集中更新 WPF 动态资源。系统主题变化的实时监听留作后续体验调优，不伪装为已实现自动更新。
+- 双库 Schema 未改变；没有实现 Pomodoro、Reminder、Statistics、AI、TTS、自动更新、多角色或 Phase 6+ 页面。验证与实际环境限制见 Phase-5-开发报告.md 和 Phase-5-人工测试文档.md。

@@ -9,7 +9,8 @@ namespace DesktopPet.App.Bootstrap;
 
 /// <summary>Async UI event boundary; the same registry can serve future input sources.</summary>
 public sealed class WindowEventBridge(IPetWindow pet, IControlCenterWindow control, ITrayService tray,
-    MainWindowViewModel viewModel, ICommandRegistry commands, IWindowService windows, IExceptionHandler exceptions, PetHost pets) : IDisposable
+    MainWindowViewModel viewModel, ICommandRegistry commands, IWindowService windows, IExceptionHandler exceptions, PetHost pets,
+    HotkeysViewModel hotkeys, DesktopPet.Application.Hotkeys.IHotkeyCoordinator hotkeyCoordinator) : IDisposable
 {
     private readonly CancellationTokenSource _events = new();
     private bool _attached, _disposed;
@@ -21,6 +22,7 @@ public sealed class WindowEventBridge(IPetWindow pet, IControlCenterWindow contr
         control.CommandRequested += OnCommand;
         tray.CommandRequested += OnCommand;
         viewModel.CommandRequested += OnCommand;
+        hotkeys.ApplyRequested += OnHotkeyApply;
         pet.DragCompleted += OnPositionChanged;
         pet.DisplayMetricsChanged += OnDisplayChanged;
         pet.ContextMenuRequested += OnContextMenu;
@@ -30,6 +32,16 @@ public sealed class WindowEventBridge(IPetWindow pet, IControlCenterWindow contr
         await AtBoundaryAsync(() => pets.Runtime.InteractAsync(e.Kind, _events.Token));
     private async void OnCommand(object? sender, WindowCommandEventArgs e) =>
         await AtBoundaryAsync(async () => { await commands.ExecuteAsync(e.Command, _events.Token); });
+    private async void OnHotkeyApply(object? sender, HotkeyApplyRequestEventArgs e)
+    {
+        try { e.Complete(await hotkeyCoordinator.ApplyAsync(e.Settings, _events.Token)); }
+        catch (OperationCanceledException) when (_events.IsCancellationRequested) { e.Complete(new(false, null, "Cancelled")); }
+        catch (Exception exception)
+        {
+            exceptions.Report(exception, ErrorCode.CommandFailed, ErrorOrigin.Command);
+            e.Complete(new(false, null, "RegistrationFailed"));
+        }
+    }
     private async void OnPositionChanged(object? sender, EventArgs e) =>
         await AtBoundaryAsync(() => windows.SavePositionAsync(_events.Token));
     private async void OnDisplayChanged(object? sender, EventArgs e) =>
@@ -61,6 +73,7 @@ public sealed class WindowEventBridge(IPetWindow pet, IControlCenterWindow contr
         control.CommandRequested -= OnCommand;
         tray.CommandRequested -= OnCommand;
         viewModel.CommandRequested -= OnCommand;
+        hotkeys.ApplyRequested -= OnHotkeyApply;
         pet.DragCompleted -= OnPositionChanged;
         pet.DisplayMetricsChanged -= OnDisplayChanged;
         pet.ContextMenuRequested -= OnContextMenu;

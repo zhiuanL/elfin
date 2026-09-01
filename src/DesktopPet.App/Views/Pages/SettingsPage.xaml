@@ -1,0 +1,27 @@
+<UserControl x:Class="DesktopPet.App.Views.Pages.SettingsPage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+    <TextBlock Text="{Binding Title}" Style="{StaticResource PageTitleStyle}"/><TextBlock Text="{Binding Subtitle}" Style="{StaticResource SubtitleStyle}" Margin="0,6,0,18"/>
+    <Expander Header="{Binding GeneralTitle}" IsExpanded="True"><Border Style="{StaticResource CardStyle}"><StackPanel>
+      <TextBlock Text="{Binding LanguageText}"/><ComboBox ItemsSource="{Binding Cultures}" SelectedValue="{Binding Culture}" SelectedValuePath="Value" DisplayMemberPath="Label" Margin="0,5,0,12"/>
+      <TextBlock Text="{Binding CloseBehaviorText}"/><ComboBox ItemsSource="{Binding CloseBehaviors}" SelectedValue="{Binding CloseBehavior}" SelectedValuePath="Value" DisplayMemberPath="Label" Margin="0,5,0,12"/>
+      <Button Content="{Binding ApplyGeneralText}" Command="{Binding ApplyGeneralCommand}" HorizontalAlignment="Left"/>
+    </StackPanel></Border></Expander>
+    <Expander Header="{Binding PetTitle}" IsExpanded="True"><Border Style="{StaticResource CardStyle}"><StackPanel>
+      <CheckBox Content="{Binding PetVisibleText}" IsChecked="{Binding PetVisible}" Margin="0,0,0,10"/><CheckBox Content="{Binding TopmostText}" IsChecked="{Binding Topmost}" Margin="0,0,0,12"/>
+      <Button Content="{Binding ApplyPetText}" Command="{Binding ApplyPetCommand}" HorizontalAlignment="Left"/>
+    </StackPanel></Border></Expander>
+    <Expander Header="{Binding MovementTitle}" IsExpanded="True"><Border Style="{StaticResource CardStyle}"><StackPanel DataContext="{Binding Movement}">
+      <TextBlock Text="{Binding Hint}" Style="{StaticResource SubtitleStyle}" Margin="0,0,0,10"/><WrapPanel>
+        <ComboBox ItemsSource="{Binding Modes}" SelectedValue="{Binding Mode}" SelectedValuePath="Value" DisplayMemberPath="Label" MinWidth="130" Margin="0,0,8,8"/>
+        <ComboBox ItemsSource="{Binding Displays}" SelectedValue="{Binding Display}" SelectedValuePath="Value" DisplayMemberPath="Label" MinWidth="140" Margin="0,0,8,8"/>
+        <ComboBox ItemsSource="{Binding Styles}" SelectedValue="{Binding Style}" SelectedValuePath="Value" DisplayMemberPath="Label" MinWidth="120" Margin="0,0,8,8"/>
+        <ComboBox ItemsSource="{Binding Hybrids}" SelectedItem="{Binding Hybrid}" MinWidth="140" Margin="0,0,8,8"/>
+      </WrapPanel><TextBox Text="{Binding SelectedIds, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/><CheckBox Content="{Binding UpdateHomeText}" IsChecked="{Binding UpdateHomeOnDrag}" Margin="0,0,0,10"/><Button Content="{Binding ApplyText}" Command="{Binding ApplyCommand}" HorizontalAlignment="Left"/>
+      <TextBlock Text="{Binding Details}" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryTextBrush}"/>
+    </StackPanel></Border></Expander>
+    <Expander Header="{Binding InteractionTitle}" IsExpanded="True"><Border Style="{StaticResource CardStyle}"><WrapPanel DataContext="{Binding Movement}"><Button Content="{Binding InteractiveText}" Command="{Binding InteractiveCommand}"/><Button Content="{Binding ClickThroughText}" Command="{Binding ClickThroughCommand}"/><Button Content="{Binding TemporaryText}" Command="{Binding TemporaryCommand}"/></WrapPanel></Border></Expander>
+    <Expander Header="{Binding AppearanceTitle}" IsExpanded="True"><Border Style="{StaticResource CardStyle}"><StackPanel><ComboBox ItemsSource="{Binding Themes}" SelectedValue="{Binding Theme}" SelectedValuePath="Value" DisplayMemberPath="Label" Margin="0,0,0,12"/><Button Content="{Binding ApplyAppearanceText}" Command="{Binding ApplyAppearanceCommand}" HorizontalAlignment="Left"/></StackPanel></Border></Expander>
+    <Expander Header="{Binding AdvancedTitle}"><Border Style="{StaticResource CardStyle}"><StackPanel><TextBlock><Run Text="{Binding AppVersionText, Mode=OneWay}"/><Run Text=": "/><Run Text="{Binding AppVersion, Mode=OneWay}"/></TextBlock><TextBlock><Run Text="{Binding SettingsSchemaText, Mode=OneWay}"/><Run Text=": "/><Run Text="{Binding SettingsSchema, Mode=OneWay}"/></TextBlock></StackPanel></Border></Expander>
+    <TextBlock Text="{Binding Notice}" Foreground="{DynamicResource AccentBrush}" Margin="0,4,0,12"/>
+  </StackPanel></ScrollViewer>
+</UserControl>

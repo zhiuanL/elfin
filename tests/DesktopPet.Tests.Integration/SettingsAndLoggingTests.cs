@@ -36,6 +36,27 @@ public sealed class SettingsAndLoggingTests
         Assert.Empty(Directory.GetFiles(env.Directories.Config, "*.tmp"));
     }
 
+    [Fact]
+    public async Task PhaseFiveAppearanceAndHotkeysRoundTripAndSchemaFiveMigrates()
+    {
+        using var env = new TestEnvironment();
+        var path = Path.Combine(env.Directories.Config, "settings.json");
+        await File.WriteAllTextAsync(path, "{\"schemaVersion\":5,\"culture\":\"en-US\"}");
+        using var service = CreateSettings(env);
+        var migrated = await service.LoadAsync(default);
+        Assert.Equal(SettingsLoadStatus.Migrated, migrated.Status);
+        Assert.Equal(AppSettings.CurrentSchemaVersion, migrated.Settings.SchemaVersion);
+        Assert.Equal(ThemeMode.System, migrated.Settings.Appearance.Theme);
+        Assert.Equal(6, migrated.Settings.Hotkeys.Bindings.Count);
+
+        var bindings = migrated.Settings.Hotkeys.Bindings.Select(item => item.Command == DesktopPet.Application.Commands.CommandId.ShowPet
+            ? item with { Gesture = new() { Modifiers = HotkeyModifiers.Control | HotkeyModifiers.Shift, Key = HotkeyKey.S } }
+            : item).ToArray();
+        var updated = migrated.Settings with { Appearance = new() { Theme = ThemeMode.Dark }, Hotkeys = new() { Bindings = bindings } };
+        await service.SaveAsync(updated, default);
+        Assert.Equal(updated, (await service.LoadAsync(default)).Settings);
+    }
+
     [Theory]
     [InlineData("{")]
     [InlineData("null")]

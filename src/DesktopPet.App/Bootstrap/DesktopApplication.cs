@@ -7,13 +7,17 @@ using DesktopPet.App.ViewModels;
 using DesktopPet.App.Views;
 using DesktopPet.Application.Runtime;
 using DesktopPet.Application.Movement;
+using DesktopPet.Application.Appearance;
+using DesktopPet.Application.Hotkeys;
 
 namespace DesktopPet.App.Bootstrap;
 
 public sealed class DesktopApplication(IRecoveryCoordinator recovery, MainWindow window, PetWindow petWindow,
     MainWindowViewModel viewModel, ITextLocalizer text, IAppLogger logger, TimeProvider timeProvider,
     IWindowService windows, WindowEventBridge events, PetHost pets,
-    CharacterToolsViewModel characterTools, IExceptionHandler exceptions, IMouseInteractionService input, MovementToolsViewModel movementTools)
+    CharacterToolsViewModel characterTools, IExceptionHandler exceptions, IMouseInteractionService input, MovementToolsViewModel movementTools,
+    CharacterManagerViewModel characterManager, SettingsViewModel settings, HotkeysViewModel hotkeys,
+    IAppearanceService appearance, IHotkeyCoordinator hotkeyCoordinator)
 {
     private readonly TaskCompletionSource _rendered = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly TaskCompletionSource _petRendered = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -26,6 +30,7 @@ public sealed class DesktopApplication(IRecoveryCoordinator recovery, MainWindow
         ct.ThrowIfCancellationRequested();
         System.Globalization.CultureInfo.CurrentCulture = text.Culture;
         System.Globalization.CultureInfo.CurrentUICulture = text.Culture;
+        await appearance.InitializeAsync(ct);
         viewModel.Initialize(result);
         await pets.Runtime.StartAsync(ct);
         await characterTools.InitializeAsync();
@@ -34,8 +39,12 @@ public sealed class DesktopApplication(IRecoveryCoordinator recovery, MainWindow
         petWindow.IsVisibleChanged += OnPetVisibilityChanged;
         events.Attach();
         await windows.InitializeAsync(ct);
+        await hotkeyCoordinator.InitializeAsync(ct);
         await pets.Runtime.ReconcileMovementAsync(false, ct);
         movementTools.Initialize();
+        settings.Initialize();
+        hotkeys.Initialize();
+        await characterManager.InitializeAsync();
         logger.Write(new(AppEvent.Started, timeProvider.GetUtcNow()));
     }
     private void OnRendered(object? sender, EventArgs e)
@@ -64,7 +73,12 @@ public sealed class DesktopApplication(IRecoveryCoordinator recovery, MainWindow
         petWindow.ContentRendered -= OnPetRendered;
         petWindow.IsVisibleChanged -= OnPetVisibilityChanged;
         events.Dispose();
-        try { await movementTools.StopAsync(); await characterTools.StopAsync(); await pets.Runtime.StopAsync(ct); await input.StopAsync(ct); }
+        try
+        {
+            await hotkeys.StopAsync(); await characterManager.StopAsync(); await settings.StopAsync();
+            await movementTools.StopAsync(); await characterTools.StopAsync();
+            await hotkeyCoordinator.StopAsync(ct); await pets.Runtime.StopAsync(ct); await input.StopAsync(ct);
+        }
         finally { await windows.StopAsync(ct); }
     }
 }

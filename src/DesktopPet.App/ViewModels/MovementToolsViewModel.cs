@@ -24,17 +24,17 @@ public sealed class MovementToolsViewModel : ObservableViewModel, IDisposable
         IMouseInteractionService input, ITextLocalizer text, IExceptionHandler exceptions)
     {
         _pets = pets; _settings = settings; _displays = displays; _input = input; _text = text;
-        Modes = [Option(MovementMode.Fixed, TextKey.MovementFixed), Option(MovementMode.Local, TextKey.MovementLocal),
-            Option(MovementMode.Desktop, TextKey.MovementDesktop), Option(MovementMode.Hybrid, TextKey.MovementHybrid)];
-        Displays = [Option(DisplayPolicy.PrimaryOnly, TextKey.DisplayPrimary), Option(DisplayPolicy.LockedCurrent, TextKey.DisplayCurrent),
-            Option(DisplayPolicy.SelectedMonitors, TextKey.DisplaySelected), Option(DisplayPolicy.AllMonitors, TextKey.DisplayAll)];
-        Styles = [Option(MotionStyle.Quiet, TextKey.MotionQuiet), Option(MotionStyle.Natural, TextKey.MotionNatural), Option(MotionStyle.Lively, TextKey.MotionLively)];
+        BuildOptions();
         AsyncActionCommand Command(Func<Task> action) => new(action, e =>
         { exceptions.Report(e, ErrorCode.CommandFailed, ErrorOrigin.Command); Details = text.Get(TextKey.CommandFailed); });
         ApplyCommand = Command(async () =>
         {
             await pets.Runtime.ApplyMovementSettingsAsync(Mode, Hybrid, Display, Style,
                 SelectedIds.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries), _lifetime.Token);
+            await _settings.UpdateAsync(current => current with
+            {
+                Movement = current.Movement with { UpdateHomeOnDrag = UpdateHomeOnDrag }
+            }, _lifetime.Token);
             Refresh();
         });
         InteractiveCommand = Command(async () => { await input.SetModeAsync(MouseInteractionMode.Interactive, _lifetime.Token); Refresh(); });
@@ -42,6 +42,7 @@ public sealed class MovementToolsViewModel : ObservableViewModel, IDisposable
         TemporaryCommand = Command(async () => { await input.SetModeAsync(MouseInteractionMode.TemporaryPassThrough, _lifetime.Token); Refresh(); });
         RefreshCommand = Command(() => { Refresh(); return Task.CompletedTask; });
         _commands = [ApplyCommand, InteractiveCommand, ClickThroughCommand, TemporaryCommand, RefreshCommand];
+        _text.CultureChanged += OnCultureChanged;
     }
     private MovementOption<T> Option<T>(T value, TextKey key) => new(value, _text.Get(key));
     public string Heading => _text.Get(TextKey.MovementTools);
@@ -51,15 +52,17 @@ public sealed class MovementToolsViewModel : ObservableViewModel, IDisposable
     public string ClickThroughText => _text.Get(TextKey.ToggleClickThrough);
     public string TemporaryText => _text.Get(TextKey.TemporaryClickThrough);
     public string RefreshText => _text.Get(TextKey.CharacterRefresh);
-    public IReadOnlyList<MovementOption<MovementMode>> Modes { get; }
-    public IReadOnlyList<MovementOption<DisplayPolicy>> Displays { get; }
-    public IReadOnlyList<MovementOption<MotionStyle>> Styles { get; }
+    public string UpdateHomeText => _text.Get(TextKey.UpdateHomeOnDrag);
+    public IReadOnlyList<MovementOption<MovementMode>> Modes { get; private set; } = [];
+    public IReadOnlyList<MovementOption<DisplayPolicy>> Displays { get; private set; } = [];
+    public IReadOnlyList<MovementOption<MotionStyle>> Styles { get; private set; } = [];
     public IReadOnlyList<HybridMovementStrategy> Hybrids { get; } = Enum.GetValues<HybridMovementStrategy>();
     public MovementMode Mode { get; set; }
     public HybridMovementStrategy Hybrid { get; set; }
     public DisplayPolicy Display { get; set; }
     public MotionStyle Style { get; set; }
     public string SelectedIds { get; set; } = "";
+    public bool UpdateHomeOnDrag { get; set; }
     public string Details { get => _details; private set { _details = value; OnPropertyChanged(); } }
     public AsyncActionCommand ApplyCommand { get; }
     public AsyncActionCommand InteractiveCommand { get; }
@@ -70,7 +73,7 @@ public sealed class MovementToolsViewModel : ObservableViewModel, IDisposable
     {
         var s = _settings.Current;
         Mode = s.MovementMode; Hybrid = s.HybridStrategy; Display = s.DisplayPolicy; Style = s.MotionStyle;
-        SelectedIds = string.Join(", ", s.Movement.SelectedDisplays);
+        SelectedIds = string.Join(", ", s.Movement.SelectedDisplays); UpdateHomeOnDrag = s.Movement.UpdateHomeOnDrag;
         OnPropertyChanged(string.Empty);
         Refresh();
     }
@@ -81,6 +84,18 @@ public sealed class MovementToolsViewModel : ObservableViewModel, IDisposable
             state?.Target, state?.Facing, _input.Mode) + "\n" +
             string.Join("\n", _displays.GetTopology().Displays.Select(d => $"{d.Id}: {d.WorkingArea}; DPI ×{d.Dpi.X:F2}"));
     }
+    private void BuildOptions()
+    {
+        Modes = [Option(MovementMode.Fixed, TextKey.MovementFixed), Option(MovementMode.Local, TextKey.MovementLocal),
+            Option(MovementMode.Desktop, TextKey.MovementDesktop), Option(MovementMode.Hybrid, TextKey.MovementHybrid)];
+        Displays = [Option(DisplayPolicy.PrimaryOnly, TextKey.DisplayPrimary), Option(DisplayPolicy.LockedCurrent, TextKey.DisplayCurrent),
+            Option(DisplayPolicy.SelectedMonitors, TextKey.DisplaySelected), Option(DisplayPolicy.AllMonitors, TextKey.DisplayAll)];
+        Styles = [Option(MotionStyle.Quiet, TextKey.MotionQuiet), Option(MotionStyle.Natural, TextKey.MotionNatural), Option(MotionStyle.Lively, TextKey.MotionLively)];
+    }
+    private void OnCultureChanged(object? sender, EventArgs e)
+    {
+        BuildOptions(); OnPropertyChanged(string.Empty); Refresh();
+    }
     public async Task StopAsync() { _lifetime.Cancel(); await Task.WhenAll(_commands.Select(c => c.Completion)); }
-    public void Dispose() { _lifetime.Cancel(); _lifetime.Dispose(); }
+    public void Dispose() { _text.CultureChanged -= OnCultureChanged; _lifetime.Cancel(); _lifetime.Dispose(); }
 }

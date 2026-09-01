@@ -1,0 +1,11 @@
+<UserControl x:Class="DesktopPet.App.Views.Pages.HomePage" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+    <TextBlock Text="{Binding Title}" Style="{StaticResource PageTitleStyle}"/><TextBlock Text="{Binding Subtitle}" Style="{StaticResource SubtitleStyle}" Margin="0,6,0,24"/>
+    <UniformGrid Columns="2">
+      <Border Style="{StaticResource CardStyle}"><StackPanel><TextBlock Text="{Binding CurrentCharacterTitle}" FontWeight="SemiBold"/><TextBlock Text="{Binding CharacterName}" FontSize="23" Margin="0,12,0,2"/><TextBlock Text="{Binding CharacterLevel}" Foreground="{DynamicResource SecondaryTextBrush}"/><Button Content="{Binding OpenCharactersText}" Command="{Binding OpenCharactersCommand}" HorizontalAlignment="Left" Margin="0,18,0,0"/></StackPanel></Border>
+      <Border Style="{StaticResource CardStyle}"><StackPanel><TextBlock Text="{Binding PetStatusTitle}" FontWeight="SemiBold"/><TextBlock Text="{Binding PetStatus}" FontSize="23" Margin="0,12,0,2"/><TextBlock Text="{Binding SessionSummary}" Foreground="{DynamicResource SecondaryTextBrush}"/></StackPanel></Border>
+      <Border Style="{StaticResource CardStyle}"><StackPanel><TextBlock Text="{Binding MovementTitle}" FontWeight="SemiBold"/><TextBlock Text="{Binding MovementMode}" FontSize="17" TextWrapping="Wrap" Margin="0,12,0,8"/><Button Content="{Binding OpenSettingsText}" Command="{Binding OpenSettingsCommand}" HorizontalAlignment="Left"/></StackPanel></Border>
+      <Border Style="{StaticResource CardStyle}"><StackPanel><TextBlock Text="{Binding QuickActionsTitle}" FontWeight="SemiBold" Margin="0,0,0,14"/><WrapPanel><Button Content="{Binding ShowText}" Command="{Binding ShowCommand}"/><Button Content="{Binding HideText}" Command="{Binding HideCommand}"/><Button Content="{Binding ClickThroughText}" Command="{Binding ToggleClickThroughCommand}"/></WrapPanel></StackPanel></Border>
+    </UniformGrid>
+  </StackPanel></ScrollViewer>
+</UserControl>
