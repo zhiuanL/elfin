@@ -47,7 +47,7 @@ public sealed class SettingsAndLoggingTests
         Assert.Equal(SettingsLoadStatus.Migrated, migrated.Status);
         Assert.Equal(AppSettings.CurrentSchemaVersion, migrated.Settings.SchemaVersion);
         Assert.Equal(ThemeMode.System, migrated.Settings.Appearance.Theme);
-        Assert.Equal(6, migrated.Settings.Hotkeys.Bindings.Count);
+        Assert.Equal(7, migrated.Settings.Hotkeys.Bindings.Count);
 
         var bindings = migrated.Settings.Hotkeys.Bindings.Select(item => item.Command == DesktopPet.Application.Commands.CommandId.ShowPet
             ? item with { Gesture = new() { Modifiers = HotkeyModifiers.Control | HotkeyModifiers.Shift, Key = HotkeyKey.S } }
@@ -55,6 +55,28 @@ public sealed class SettingsAndLoggingTests
         var updated = migrated.Settings with { Appearance = new() { Theme = ThemeMode.Dark }, Hotkeys = new() { Bindings = bindings } };
         await service.SaveAsync(updated, default);
         Assert.Equal(updated, (await service.LoadAsync(default)).Settings);
+    }
+
+    [Fact]
+    public async Task PhaseSixProductivityDefaultsMigrateFromSchemaSixAndRoundTrip()
+    {
+        using var env = new TestEnvironment();
+        var path = Path.Combine(env.Directories.Config, "settings.json");
+        await File.WriteAllTextAsync(path, "{\"schemaVersion\":6,\"culture\":\"en-US\"}");
+        using var service = CreateSettings(env);
+        var migrated = await service.LoadAsync(default);
+        Assert.Equal(SettingsLoadStatus.Migrated, migrated.Status);
+        Assert.Equal(25, migrated.Settings.Productivity.Pomodoro.FocusMinutes);
+        Assert.Equal(15, migrated.Settings.Productivity.Reminders.SmartMissedWindowMinutes);
+
+        var updated = migrated.Settings with { Productivity = new()
+        {
+            Pomodoro = new() { FocusMinutes = 40, ShortBreakMinutes = 8, LongBreakMinutes = 20,
+                LongBreakInterval = 3, AutoStartNextPhase = true },
+            Reminders = new() { SmartMissedWindowMinutes = 30 }
+        } };
+        await service.SaveAsync(updated, default);
+        Assert.Equal(updated.Productivity, (await service.LoadAsync(default)).Settings.Productivity);
     }
 
     [Theory]

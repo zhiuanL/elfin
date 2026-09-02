@@ -54,6 +54,7 @@ public static class HotkeyCatalog
         new(CommandId.HidePet, Gesture(HotkeyKey.H)),
         new(CommandId.OpenControlCenter, Gesture(HotkeyKey.O)),
         new(CommandId.TogglePetVisibility, Gesture(HotkeyKey.P)),
+        new(CommandId.StartOrPausePomodoro, Gesture(HotkeyKey.F)),
         new(CommandId.ToggleClickThrough, Gesture(HotkeyKey.T)),
         new(CommandId.TemporaryClickThrough, Gesture(HotkeyKey.I))
     ];

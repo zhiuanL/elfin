@@ -141,4 +141,75 @@
   <data name="DiagnosticsTitle" xml:space="preserve"><value>Diagnostics</value></data>
   <data name="DiagnosticsSubtitle" xml:space="preserve"><value>Developer-facing local diagnostics retained from earlier phases.</value></data>
   <data name="OfflineCoreStatus" xml:space="preserve"><value>Offline pet core is independent from AI and network services.</value></data>
+  <data name="NavPomodoro" xml:space="preserve"><value>Pomodoro</value></data>
+  <data name="NavReminders" xml:space="preserve"><value>Reminders</value></data>
+  <data name="NavStatistics" xml:space="preserve"><value>Statistics</value></data>
+  <data name="HotkeyStartPausePomodoro" xml:space="preserve"><value>Start or pause Pomodoro</value></data>
+  <data name="PomodoroTitle" xml:space="preserve"><value>Pomodoro</value></data>
+  <data name="PomodoroSubtitle" xml:space="preserve"><value>Offline focus sessions use absolute UTC time and recover after restart or sleep.</value></data>
+  <data name="PomodoroPhaseLabel" xml:space="preserve"><value>Current phase</value></data>
+  <data name="PomodoroRemaining" xml:space="preserve"><value>Remaining</value></data>
+  <data name="PomodoroStart" xml:space="preserve"><value>Start</value></data>
+  <data name="PomodoroStartPause" xml:space="preserve"><value>Start / pause</value></data>
+  <data name="PomodoroPause" xml:space="preserve"><value>Pause</value></data>
+  <data name="PomodoroResume" xml:space="preserve"><value>Resume</value></data>
+  <data name="PomodoroStop" xml:space="preserve"><value>Stop</value></data>
+  <data name="PomodoroTask" xml:space="preserve"><value>Tasks</value></data>
+  <data name="PomodoroTags" xml:space="preserve"><value>Tags</value></data>
+  <data name="PomodoroConsecutive" xml:space="preserve"><value>Consecutive focus sessions</value></data>
+  <data name="PomodoroTodayFocus" xml:space="preserve"><value>Today's focus</value></data>
+  <data name="PomodoroSettings" xml:space="preserve"><value>Pomodoro settings</value></data>
+  <data name="PomodoroSaveSettings" xml:space="preserve"><value>Save settings</value></data>
+  <data name="PomodoroAddTask" xml:space="preserve"><value>Add task</value></data>
+  <data name="PomodoroArchiveTask" xml:space="preserve"><value>Archive task</value></data>
+  <data name="PomodoroAddTag" xml:space="preserve"><value>Add tag</value></data>
+  <data name="PomodoroAssignTag" xml:space="preserve"><value>Assign tag</value></data>
+  <data name="PomodoroNoTask" xml:space="preserve"><value>No task</value></data>
+  <data name="PomodoroIdle" xml:space="preserve"><value>Ready</value></data>
+  <data name="RemindersTitle" xml:space="preserve"><value>Reminders</value></data>
+  <data name="RemindersSubtitle" xml:space="preserve"><value>Create one-time or recurring reminders with independent notification channels.</value></data>
+  <data name="ReminderAdd" xml:space="preserve"><value>Add</value></data>
+  <data name="ReminderUpdate" xml:space="preserve"><value>Update</value></data>
+  <data name="ReminderDelete" xml:space="preserve"><value>Delete</value></data>
+  <data name="ReminderEnable" xml:space="preserve"><value>Enable</value></data>
+  <data name="ReminderDisable" xml:space="preserve"><value>Disable</value></data>
+  <data name="ReminderScheduleType" xml:space="preserve"><value>Schedule type</value></data>
+  <data name="ReminderDue" xml:space="preserve"><value>Due time</value></data>
+  <data name="ReminderRecurrence" xml:space="preserve"><value>Recurrence</value></data>
+  <data name="ReminderTimeZone" xml:space="preserve"><value>Time zone</value></data>
+  <data name="ReminderNextTrigger" xml:space="preserve"><value>Next trigger</value></data>
+  <data name="ReminderChannelsLabel" xml:space="preserve"><value>Notification channels</value></data>
+  <data name="ReminderEmpty" xml:space="preserve"><value>No upcoming reminder</value></data>
+  <data name="ReminderDeleteConfirm" xml:space="preserve"><value>Delete reminder '{0}'? This cannot be undone.</value></data>
+  <data name="StatisticsTitle" xml:space="preserve"><value>Statistics</value></data>
+  <data name="StatisticsSubtitle" xml:space="preserve"><value>Focus totals are calculated from persisted sessions in your current time zone.</value></data>
+  <data name="StatisticsTodayFocus" xml:space="preserve"><value>Today's focus</value></data>
+  <data name="StatisticsTodayCompleted" xml:space="preserve"><value>Completed Pomodoros</value></data>
+  <data name="StatisticsStreak" xml:space="preserve"><value>Focus streak days</value></data>
+  <data name="StatisticsDaily" xml:space="preserve"><value>Daily trend</value></data>
+  <data name="StatisticsWeekly" xml:space="preserve"><value>Weekly trend</value></data>
+  <data name="StatisticsMonthly" xml:space="preserve"><value>Monthly trend</value></data>
+  <data name="StatisticsTaskSummary" xml:space="preserve"><value>Task summary</value></data>
+  <data name="StatisticsTagSummary" xml:space="preserve"><value>Tag summary</value></data>
+  <data name="HomePomodoroCard" xml:space="preserve"><value>Pomodoro</value></data>
+  <data name="HomeTodayFocusCard" xml:space="preserve"><value>Today's focus</value></data>
+  <data name="HomeRecentReminderCard" xml:space="preserve"><value>Next reminder</value></data>
+  <data name="OpenPomodoro" xml:space="preserve"><value>Open Pomodoro</value></data>
+  <data name="OpenReminders" xml:space="preserve"><value>Open reminders</value></data>
+  <data name="FocusDuration" xml:space="preserve"><value>Focus minutes</value></data>
+  <data name="ShortBreakDuration" xml:space="preserve"><value>Short break minutes</value></data>
+  <data name="LongBreakDuration" xml:space="preserve"><value>Long break minutes</value></data>
+  <data name="LongBreakIntervalLabel" xml:space="preserve"><value>Long break interval</value></data>
+  <data name="AutoStartNextPhase" xml:space="preserve"><value>Automatically start the next phase</value></data>
+  <data name="ReminderTitleLabel" xml:space="preserve"><value>Title</value></data>
+  <data name="ReminderDescriptionLabel" xml:space="preserve"><value>Description</value></data>
+  <data name="ReminderRelativeMinutes" xml:space="preserve"><value>Relative minutes</value></data>
+  <data name="ReminderAbsoluteLocal" xml:space="preserve"><value>Absolute local time (yyyy-MM-dd HH:mm)</value></data>
+  <data name="ReminderRecurringTime" xml:space="preserve"><value>Time</value></data>
+  <data name="ReminderIntervalDays" xml:space="preserve"><value>Interval days</value></data>
+  <data name="ReminderWeekdays" xml:space="preserve"><value>Weekdays</value></data>
+  <data name="ChannelPetBubble" xml:space="preserve"><value>Pet bubble</value></data>
+  <data name="ChannelPetAction" xml:space="preserve"><value>Pet action</value></data>
+  <data name="ChannelWindows" xml:space="preserve"><value>Windows notification</value></data>
+  <data name="ChannelSound" xml:space="preserve"><value>Sound</value></data>
 </root>

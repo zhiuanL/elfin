@@ -23,10 +23,12 @@ public interface IDisplayTopologyService
     DisplayTopology GetTopology();
     event EventHandler? TopologyChanged;
 }
-public interface ISessionStateService
+public interface ISessionStateService : IDisposable
 {
     SessionState State { get; }
     event EventHandler? StateChanged;
+    void Start();
+    Task StopAsync(CancellationToken ct);
 }
 public enum HotkeyRegistrationStatus { Registered, Invalid, Conflict, SystemRejected }
 public sealed record HotkeyRegistrationResult(HotkeyRegistrationStatus Status, string? ErrorCode = null)
@@ -42,7 +44,7 @@ public interface IHotkeyService : IDisposable
     Task UnregisterAsync(CommandId command, CancellationToken ct);
     Task UnregisterAllAsync(CancellationToken ct);
 }
-public enum ConfirmationAction { RemoveCharacter }
+public enum ConfirmationAction { RemoveCharacter, DeleteReminder }
 public sealed record ConfirmationRequest(ConfirmationAction Action, string Subject);
 public interface IUserConfirmationService
 {

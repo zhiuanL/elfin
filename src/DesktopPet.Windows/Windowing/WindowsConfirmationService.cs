@@ -15,6 +15,7 @@ public sealed class WindowsConfirmationService(IUiDispatcher dispatcher, ITextLo
             var message = request.Action switch
             {
                 ConfirmationAction.RemoveCharacter => string.Format(text.Culture, text.Get(TextKey.CharacterRemoveConfirm), request.Subject),
+                ConfirmationAction.DeleteReminder => string.Format(text.Culture, text.Get(TextKey.ReminderDeleteConfirm), request.Subject),
                 _ => throw new ArgumentOutOfRangeException(nameof(request))
             };
             confirmed = MessageBox.Show(message, text.Get(TextKey.ConfirmTitle), MessageBoxButton.YesNo,

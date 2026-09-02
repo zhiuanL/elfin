@@ -32,19 +32,23 @@ public sealed class MainWindowViewModel : ObservableViewModel, IDisposable
 
     public MainWindowViewModel(ITextLocalizer text, INavigationService navigation, HomeDashboardViewModel home,
         CharacterManagerViewModel characters, SettingsViewModel settings, HotkeysViewModel hotkeys,
-        DiagnosticsPageViewModel diagnostics)
+        DiagnosticsPageViewModel diagnostics, PomodoroViewModel pomodoro, RemindersViewModel reminders,
+        StatisticsViewModel statistics)
     {
         _text = text; _navigation = navigation;
         _home = home;
         _settings = settings;
         _pages = new Dictionary<AppPage, object>
         {
-            [AppPage.Home] = home, [AppPage.Characters] = characters, [AppPage.Settings] = settings,
+            [AppPage.Home] = home, [AppPage.Pomodoro] = pomodoro, [AppPage.Reminders] = reminders,
+            [AppPage.Statistics] = statistics, [AppPage.Characters] = characters, [AppPage.Settings] = settings,
             [AppPage.Hotkeys] = hotkeys, [AppPage.Diagnostics] = diagnostics
         };
         NavigationItems =
         [
-            Item(AppPage.Home, TextKey.NavHome), Item(AppPage.Characters, TextKey.NavCharacters),
+            Item(AppPage.Home, TextKey.NavHome), Item(AppPage.Pomodoro, TextKey.NavPomodoro),
+            Item(AppPage.Reminders, TextKey.NavReminders), Item(AppPage.Statistics, TextKey.NavStatistics),
+            Item(AppPage.Characters, TextKey.NavCharacters),
             Item(AppPage.Settings, TextKey.NavSettings), Item(AppPage.Hotkeys, TextKey.NavHotkeys),
             Item(AppPage.Diagnostics, TextKey.NavDiagnostics)
         ];
@@ -64,7 +68,9 @@ public sealed class MainWindowViewModel : ObservableViewModel, IDisposable
         _text = text; _navigation = new ControlCenterNavigationService(); _pages = new Dictionary<AppPage, object>();
         NavigationItems =
         [
-            Item(AppPage.Home, TextKey.NavHome), Item(AppPage.Characters, TextKey.NavCharacters),
+            Item(AppPage.Home, TextKey.NavHome), Item(AppPage.Pomodoro, TextKey.NavPomodoro),
+            Item(AppPage.Reminders, TextKey.NavReminders), Item(AppPage.Statistics, TextKey.NavStatistics),
+            Item(AppPage.Characters, TextKey.NavCharacters),
             Item(AppPage.Settings, TextKey.NavSettings), Item(AppPage.Hotkeys, TextKey.NavHotkeys),
             Item(AppPage.Diagnostics, TextKey.NavDiagnostics)
         ];

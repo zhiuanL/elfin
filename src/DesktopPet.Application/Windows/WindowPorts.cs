@@ -57,6 +57,7 @@ public static class TrayMenuDefinition
     [
         new(CommandId.ShowPet, TextKey.ShowPet),
         new(CommandId.HidePet, TextKey.HidePet),
+        new(CommandId.StartOrPausePomodoro, TextKey.PomodoroStartPause),
         new(CommandId.OpenControlCenter, TextKey.OpenControlCenter),
         new(CommandId.Exit, TextKey.ExitApplication)
     ];

@@ -27,7 +27,22 @@ public enum TextKey { AppTitle, BootstrapTitle, BootstrapDescription, OfflineRea
     HotkeysTitle, HotkeysSubtitle, HotkeyEnabled, HotkeyCommand, HotkeyModifiers, HotkeyKey,
     HotkeyApply, HotkeyReset, HotkeySaved, HotkeyConflict, HotkeyInvalid,
     HotkeyShowPet, HotkeyHidePet, HotkeyOpenControlCenter, HotkeyTogglePet, HotkeyToggleClickThrough,
-    HotkeyTemporaryClickThrough, DiagnosticsTitle, DiagnosticsSubtitle, OfflineCoreStatus }
+    HotkeyTemporaryClickThrough, HotkeyStartPausePomodoro, DiagnosticsTitle, DiagnosticsSubtitle, OfflineCoreStatus,
+    NavPomodoro, NavReminders, NavStatistics,
+    PomodoroTitle, PomodoroSubtitle, PomodoroPhaseLabel, PomodoroRemaining, PomodoroStart, PomodoroStartPause,
+    PomodoroPause, PomodoroResume, PomodoroStop, PomodoroTask, PomodoroTags, PomodoroConsecutive,
+    PomodoroTodayFocus, PomodoroSettings, PomodoroSaveSettings, PomodoroAddTask, PomodoroArchiveTask,
+    PomodoroAddTag, PomodoroAssignTag, PomodoroNoTask, PomodoroIdle,
+    RemindersTitle, RemindersSubtitle, ReminderAdd, ReminderUpdate, ReminderDelete, ReminderEnable,
+    ReminderDisable, ReminderScheduleType, ReminderDue, ReminderRecurrence, ReminderTimeZone,
+    ReminderNextTrigger, ReminderChannelsLabel, ReminderEmpty, ReminderDeleteConfirm,
+    StatisticsTitle, StatisticsSubtitle, StatisticsTodayFocus, StatisticsTodayCompleted,
+    StatisticsStreak, StatisticsDaily, StatisticsWeekly, StatisticsMonthly, StatisticsTaskSummary,
+    StatisticsTagSummary, HomePomodoroCard, HomeTodayFocusCard, HomeRecentReminderCard,
+    OpenPomodoro, OpenReminders, FocusDuration, ShortBreakDuration, LongBreakDuration,
+    LongBreakIntervalLabel, AutoStartNextPhase, ReminderTitleLabel, ReminderDescriptionLabel,
+    ReminderRelativeMinutes, ReminderAbsoluteLocal, ReminderRecurringTime, ReminderIntervalDays,
+    ReminderWeekdays, ChannelPetBubble, ChannelPetAction, ChannelWindows, ChannelSound }
 public interface ITextLocalizer
 {
     CultureInfo Culture { get; }

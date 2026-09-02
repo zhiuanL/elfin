@@ -4,7 +4,7 @@ namespace DesktopPet.Application.Configuration;
 
 public sealed record AppSettings
 {
-    public const int CurrentSchemaVersion = 6;
+    public const int CurrentSchemaVersion = 7;
     public const int MaxEmotionCheckpoints = 256;
     public int SchemaVersion { get; init; } = CurrentSchemaVersion;
     public string Culture { get; init; } = "zh-CN";
@@ -23,6 +23,7 @@ public sealed record AppSettings
     public ControlCenterCloseBehavior ControlCenterCloseBehavior { get; init; } = ControlCenterCloseBehavior.HideToTray;
     public AppearanceSettings Appearance { get; init; } = new();
     public HotkeySettings Hotkeys { get; init; } = new();
+    public ProductivitySettings Productivity { get; init; } = new();
 
     // Settings remain a value snapshot after JSON materializes collection instances.
     public bool Equals(AppSettings? other) => ReferenceEquals(this, other) || other is not null &&
@@ -32,7 +33,7 @@ public sealed record AppSettings
         MovementMode == other.MovementMode && HybridStrategy == other.HybridStrategy && DisplayPolicy == other.DisplayPolicy &&
         MotionStyle == other.MotionStyle && PerformanceMode == other.PerformanceMode && Equals(Logging, other.Logging) &&
         Equals(Security, other.Security) && Equals(PetWindow, other.PetWindow) && ControlCenterCloseBehavior == other.ControlCenterCloseBehavior &&
-        Equals(Appearance, other.Appearance) && Equals(Hotkeys, other.Hotkeys);
+        Equals(Appearance, other.Appearance) && Equals(Hotkeys, other.Hotkeys) && Equals(Productivity, other.Productivity);
     public override int GetHashCode()
     {
         var hash = new HashCode();
@@ -40,7 +41,7 @@ public sealed record AppSettings
         if (Emotions is not null) foreach (var emotion in Emotions) hash.Add(emotion);
         hash.Add(MovementMode); hash.Add(HybridStrategy); hash.Add(DisplayPolicy); hash.Add(MotionStyle);
         hash.Add(PerformanceMode); hash.Add(Logging); hash.Add(Security); hash.Add(PetWindow); hash.Add(ControlCenterCloseBehavior);
-        hash.Add(Appearance); hash.Add(Hotkeys);
+        hash.Add(Appearance); hash.Add(Hotkeys); hash.Add(Productivity);
         return hash.ToHashCode();
     }
 
@@ -51,7 +52,7 @@ public sealed record AppSettings
         Logging is not null && Logging.IsValid() && Security is not null && Security.IsValid() &&
         PetWindow is not null && Movement is { IsValid: true } && Runtime is not null && Runtime.Behaviors is not null &&
         Emotions is not null && Emotions.Count <= MaxEmotionCheckpoints && Enum.IsDefined(ControlCenterCloseBehavior) &&
-        Appearance is { IsValid: true } && Hotkeys is { IsValid: true };
+        Appearance is { IsValid: true } && Hotkeys is { IsValid: true } && Productivity is { IsValid: true };
 }
 public sealed record LogOptions
 {

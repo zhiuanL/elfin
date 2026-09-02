@@ -2,7 +2,7 @@
 
 Windows 桌面小精灵：桌面陪伴优先，其次办公效率，再次 AI 助手。
 
-当前为 **Phase 5 控制中心与设置体验**。Phase 0–4 基线已确认通过。已提供首页、正式角色管理、分类设置、全局快捷键、浅色/深色/系统主题及中英文切换；保留已有角色、行为、移动与窗口能力，没有实现 Phase 6+ 的办公或 AI 业务。
+当前为 **Phase 6 离线 Productivity**。Phase 0–5 基线已确认通过。已提供番茄钟、任务/标签、统计、提醒、睡眠恢复、宠物联动及控制中心入口；所有核心办公能力离线可用，没有实现 Phase 7+ 的 AI、TTS 或自然语言提醒。
 
 ## 文档与结构
 
@@ -16,6 +16,8 @@ Windows 桌面小精灵：桌面陪伴优先，其次办公效率，再次 AI �
 - [Phase 4 人工测试文档](docs/Phase-4-人工测试文档.md)
 - [Phase 5 开发报告](docs/Phase-5-开发报告.md)
 - [Phase 5 人工测试文档](docs/Phase-5-人工测试文档.md)
+- [Phase 6 开发报告](docs/Phase-6-开发报告.md)
+- [Phase 6 人工测试文档](docs/Phase-6-人工测试文档.md)
 - [角色包 Schema 1](docs/character-manifest.schema.json)
 - Solution：DesktopPet.sln；应用项目位于 src/，测试项目位于 tests/。
 
@@ -32,11 +34,11 @@ Windows x64 + .NET SDK 10.0.400（见 global.json）。若本机没有 SDK，可
 ## 验证
 
 ```powershell
-.\tools\Verify-Phase5.ps1
-.\tools\Verify-Phase5.ps1 -Configuration Release
+.\tools\Verify-Phase6.ps1
+.\tools\Verify-Phase6.ps1 -Configuration Release
 ```
 
-脚本执行 locked restore、build、test，保留 Phase 0–4 回归，并增加导航、schema 6、主题/快捷键设置、冲突回滚、命令分发与释放测试。当前 Debug 共 263 项通过；最终 Debug/Release 结果见 Phase 5 开发报告和 artifacts/TestResults/。真实 WPF 测试可能短暂显示窗口与托盘图标。首次恢复依赖需要网络，应用启动不需要网络；自动测试不能替代视觉、系统快捷键和多屏/DPI 人工验收。
+脚本执行 locked restore、build、test，保留 Phase 0–5 回归，并覆盖绝对时间番茄、恢复、Reminder/DST/去重、Task/Tag、统计、本地日期、schema 7 和真实 WPF 启动烟测。最终 Debug/Release 结果见 Phase 6 开发报告和 artifacts/TestResults/。真实 WPF 测试可能短暂显示窗口与托盘图标；自动测试不能替代视觉、系统通知、睡眠/锁屏和多屏/DPI 人工验收。
 
 使用已安装且符合 global.json 的 SDK 时，也可直接执行：
 
@@ -46,7 +48,7 @@ dotnet build DesktopPet.sln --no-restore
 dotnet test DesktopPet.sln --no-build --no-restore
 ```
 
-## 运行 Phase 5
+## 运行 Phase 6
 
 推荐使用启动脚本（默认 Debug + Portable，先还原并构建）：
 
@@ -75,7 +77,7 @@ $env:DOTNET_ROOT = (Resolve-Path .\.tools\dotnet).Path
 
 拖动小精灵移动，双击打开控制中心，右键打开常用菜单。控制中心关闭默认隐藏到托盘；小精灵关闭请求仅隐藏小精灵。真正退出请使用托盘或控制中心的“退出程序”。窗口状态、物理像素位置和激活角色标识由 Settings Service 保存。
 
-配置 schema 1–5 自动升级为 6，保留备份及既有偏好；新增主题和全局快捷键强类型配置。Home、显示器、运动、语言、关闭行为、可见性和置顶均经 Settings Service 持久化。请勿运行多个实例共用同一数据目录；全应用多实例互斥尚未纳入本阶段。
+配置 schema 1–6 自动升级为 7，保留备份及既有偏好；新增番茄时长、长休间隔、自动阶段和漏提醒窗口的强类型配置。Home、显示器、运动、语言、关闭行为、可见性、置顶和 Productivity 设置均经 Settings Service 持久化。请勿运行多个实例共用同一数据目录；全应用多实例互斥尚未纳入本阶段。
 
 在“设置 → 移动”选择固定 / 小范围 / 全桌面 / 混合并应用。默认混合 + 当前显示器 + 自然：围绕 Home 活动，空闲后偶尔扩大范围；“拖拽后更新 Home”可单独关闭。自主行为由调度器择机执行，不是点击设置后立即移动；固定模式只允许手动拖动。
 
@@ -85,7 +87,7 @@ $env:DOTNET_ROOT = (Resolve-Path .\.tools\dotnet).Path
 
 角色包仍为 Schema 1；旧包无需修改且缺少 walk 时使用 idle/fallback。新包可选声明 manifest.visualAnchor（0..1 的窗口画布锚点，默认底部中点）、supportsMirroring、movement 推荐值，并在 animations 声明 walk / walk-left / walk-right。依赖新能力的包可将 minimumAppVersion 设为 0.4.0；字段格式见角色包 Schema。系统上限优先于用户设置，用户设置优先于角色推荐。
 
-双库仅有版本化迁移账本，没有业务表。UI 文本来自 zh-CN/en-US 资源；用户配置位于 config/settings.json。API Key 不允许写入此文件、源码、数据库明文字段或日志；安全存储的业务接入留待 Phase 7。
+app.db 已通过 v2 migration 保存番茄 Session、Task/Tag、Reminder 与去重执行记录；ai.db 仍只有迁移账本。统计从 app.db 持久化 Session 按本地日期推导。UI 文本来自 zh-CN/en-US 资源；用户配置位于 config/settings.json。API Key 不允许写入此文件、源码、数据库明文字段或日志；安全存储的业务接入留待 Phase 7。
 
 ## 阶段约束
 

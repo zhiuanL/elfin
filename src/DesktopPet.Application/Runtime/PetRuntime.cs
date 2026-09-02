@@ -25,6 +25,7 @@ public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, IDisposabl
     private CancellationTokenSource? _lifetime, _run;
     private Task _loop = Task.CompletedTask;
     private bool _started, _stopped, _disposed;
+    private bool _sessionSuspended;
     private RuntimeDiagnostic _diagnostic;
     public PetRuntime(CharacterPresentationService presentation, ISettingsService settings, ICharacterBehaviorProfileReader profiles,
         TimeProvider clock, RuntimePolicy policy, IRandomSource random, IExceptionHandler exceptions, IAppLogger logger,
@@ -180,9 +181,40 @@ public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, IDisposabl
         }
         finally { _operations.Release(); }
     }
+    public async Task SetProductivityContextAsync(DesktopPet.Domain.Productivity.PomodoroPhase? phase, bool focusMode, CancellationToken ct)
+    {
+        await _operations.WaitAsync(ct);
+        try
+        {
+            if (_stopped || !_started) return;
+            await CancelLoopAsync();
+            _scheduler.PomodoroPhase = phase;
+            _scheduler.FocusMode = focusMode;
+            _scheduler.Publish();
+        }
+        finally { Resume(); _operations.Release(); }
+    }
+    public async Task SetSessionSuspendedAsync(bool suspended, CancellationToken ct)
+    {
+        await _operations.WaitAsync(ct);
+        try
+        {
+            if (_stopped || !_started || _sessionSuspended == suspended) return;
+            _sessionSuspended = suspended;
+            await CancelLoopAsync();
+            if (suspended)
+            {
+                _scheduler.IsVisible = false;
+                if (_movement is not null) await _movement.StopAsync(ct);
+            }
+            else _scheduler.IsVisible = _settings.Current.PetWindow.IsVisible;
+            _scheduler.Publish();
+        }
+        finally { Resume(); _operations.Release(); }
+    }
     private void Resume(BehaviorDefinition? first = null)
     {
-        if (!_started || _stopped || !_scheduler.IsVisible || _scheduler.IsInteracting || !_loop.IsCompleted || _lifetime?.IsCancellationRequested != false) return;
+        if (!_started || _stopped || _sessionSuspended || !_scheduler.IsVisible || _scheduler.IsInteracting || !_loop.IsCompleted || _lifetime?.IsCancellationRequested != false) return;
         _run?.Dispose();
         _run = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token);
         _loop = RunObservedAsync(first, _run.Token);

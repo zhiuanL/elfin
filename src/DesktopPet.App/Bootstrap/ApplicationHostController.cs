@@ -61,7 +61,8 @@ public sealed class ApplicationHostController(System.Windows.Application app) : 
     private async Task ExerciseControlCenterPagesAsync()
     {
         var navigation = _host!.Services.GetRequiredService<INavigationService>();
-        foreach (var page in new[] { AppPage.Home, AppPage.Characters, AppPage.Settings, AppPage.Hotkeys, AppPage.Diagnostics })
+        foreach (var page in new[] { AppPage.Home, AppPage.Pomodoro, AppPage.Reminders, AppPage.Statistics,
+                     AppPage.Characters, AppPage.Settings, AppPage.Hotkeys, AppPage.Diagnostics })
         {
             navigation.Navigate(page);
             await app.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Loaded);

@@ -6,6 +6,15 @@
       <Border Style="{StaticResource CardStyle}"><StackPanel><TextBlock Text="{Binding PetStatusTitle}" FontWeight="SemiBold"/><TextBlock Text="{Binding PetStatus}" FontSize="23" Margin="0,12,0,2"/><TextBlock Text="{Binding SessionSummary}" Foreground="{DynamicResource SecondaryTextBrush}"/></StackPanel></Border>
       <Border Style="{StaticResource CardStyle}"><StackPanel><TextBlock Text="{Binding MovementTitle}" FontWeight="SemiBold"/><TextBlock Text="{Binding MovementMode}" FontSize="17" TextWrapping="Wrap" Margin="0,12,0,8"/><Button Content="{Binding OpenSettingsText}" Command="{Binding OpenSettingsCommand}" HorizontalAlignment="Left"/></StackPanel></Border>
       <Border Style="{StaticResource CardStyle}"><StackPanel><TextBlock Text="{Binding QuickActionsTitle}" FontWeight="SemiBold" Margin="0,0,0,14"/><WrapPanel><Button Content="{Binding ShowText}" Command="{Binding ShowCommand}"/><Button Content="{Binding HideText}" Command="{Binding HideCommand}"/><Button Content="{Binding ClickThroughText}" Command="{Binding ToggleClickThroughCommand}"/></WrapPanel></StackPanel></Border>
+      <Border Style="{StaticResource CardStyle}"><StackPanel><TextBlock Text="{Binding PomodoroCardTitle}" FontWeight="SemiBold"/>
+        <TextBlock Text="{Binding PomodoroSummary}" FontSize="20" Margin="0,12"/><WrapPanel>
+          <Button Content="{Binding StartPauseText}" Command="{Binding StartPausePomodoroCommand}"/>
+          <Button Content="{Binding OpenPomodoroText}" Command="{Binding OpenPomodoroCommand}"/></WrapPanel></StackPanel></Border>
+      <Border Style="{StaticResource CardStyle}"><StackPanel><TextBlock Text="{Binding TodayFocusCardTitle}" FontWeight="SemiBold"/>
+        <TextBlock Text="{Binding TodayFocusSummary}" FontSize="20" Margin="0,12"/></StackPanel></Border>
+      <Border Style="{StaticResource CardStyle}"><StackPanel><TextBlock Text="{Binding RecentReminderCardTitle}" FontWeight="SemiBold"/>
+        <TextBlock Text="{Binding RecentReminderSummary}" TextWrapping="Wrap" FontSize="17" Margin="0,12"/>
+        <Button Content="{Binding OpenRemindersText}" Command="{Binding OpenRemindersCommand}" HorizontalAlignment="Left"/></StackPanel></Border>
     </UniformGrid>
   </StackPanel></ScrollViewer>
 </UserControl>

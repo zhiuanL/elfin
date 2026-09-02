@@ -24,6 +24,8 @@ public sealed class BehaviorScheduler(TimeProvider clock, IRandomSource random, 
     public bool IsInteracting { get; set; }
     public int InteractionCount { get; private set; }
     public DateTimeOffset? LastInteractionUtc { get; private set; }
+    public bool FocusMode { get; set; }
+    public DesktopPet.Domain.Productivity.PomodoroPhase? PomodoroPhase { get; set; }
     public RuntimeDiagnostic Diagnostic => new(State.Current, Emotion.Current, _scores, Memory.Snapshot(clock.GetUtcNow()),
         IsRunning, IsVisible, IsInteracting, InteractionCount, LastInteractionUtc);
     public event EventHandler? Changed;
@@ -72,7 +74,8 @@ public sealed class BehaviorScheduler(TimeProvider clock, IRandomSource random, 
                 if (next.Id != BehaviorId.Idle) { next = _behaviors.First(item => item.Id == BehaviorId.Idle); continue; }
                 var now = clock.GetUtcNow();
                 var context = new BehaviorContext(now, State.Current.Primary, Emotion.Current, Memory.Snapshot(now), _capabilities,
-                    LastInteractionUtc, IsVisible, IsInteracting, TimeOnly.FromDateTime(clock.GetLocalNow().DateTime));
+                    LastInteractionUtc, IsVisible, IsInteracting, TimeOnly.FromDateTime(clock.GetLocalNow().DateTime),
+                    FocusMode, PomodoroPhase);
                 var decision = decisions.Decide(context, _behaviors);
                 _scores = decision.Scores;
                 if (decision.UsedFallback) Log(AppEvent.DecisionFallback);

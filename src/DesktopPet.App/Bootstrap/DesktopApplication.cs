@@ -17,7 +17,9 @@ public sealed class DesktopApplication(IRecoveryCoordinator recovery, MainWindow
     IWindowService windows, WindowEventBridge events, PetHost pets,
     CharacterToolsViewModel characterTools, IExceptionHandler exceptions, IMouseInteractionService input, MovementToolsViewModel movementTools,
     CharacterManagerViewModel characterManager, SettingsViewModel settings, HotkeysViewModel hotkeys,
-    IAppearanceService appearance, IHotkeyCoordinator hotkeyCoordinator)
+    IAppearanceService appearance, IHotkeyCoordinator hotkeyCoordinator, ProductivityRuntimeBridge productivityBridge,
+    IPomodoroService pomodoro, IReminderScheduler reminderScheduler, PomodoroViewModel pomodoroPage,
+    RemindersViewModel remindersPage, StatisticsViewModel statisticsPage, HomeDashboardViewModel home)
 {
     private readonly TaskCompletionSource _rendered = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly TaskCompletionSource _petRendered = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -33,6 +35,7 @@ public sealed class DesktopApplication(IRecoveryCoordinator recovery, MainWindow
         await appearance.InitializeAsync(ct);
         viewModel.Initialize(result);
         await pets.Runtime.StartAsync(ct);
+        await productivityBridge.StartAsync(ct);
         await characterTools.InitializeAsync();
         window.ContentRendered += OnRendered;
         petWindow.ContentRendered += OnPetRendered;
@@ -45,6 +48,10 @@ public sealed class DesktopApplication(IRecoveryCoordinator recovery, MainWindow
         settings.Initialize();
         hotkeys.Initialize();
         await characterManager.InitializeAsync();
+        await pomodoroPage.InitializeAsync();
+        await remindersPage.InitializeAsync();
+        await statisticsPage.InitializeAsync();
+        await home.InitializeAsync(ct);
         logger.Write(new(AppEvent.Started, timeProvider.GetUtcNow()));
     }
     private void OnRendered(object? sender, EventArgs e)
@@ -75,6 +82,10 @@ public sealed class DesktopApplication(IRecoveryCoordinator recovery, MainWindow
         events.Dispose();
         try
         {
+            await productivityBridge.StopAsync(ct);
+            await reminderScheduler.StopAsync(ct);
+            await pomodoro.StopSchedulerAsync(ct);
+            await pomodoroPage.StopAsync(); remindersPage.Dispose();
             await hotkeys.StopAsync(); await characterManager.StopAsync(); await settings.StopAsync();
             await movementTools.StopAsync(); await characterTools.StopAsync();
             await hotkeyCoordinator.StopAsync(ct); await pets.Runtime.StopAsync(ct); await input.StopAsync(ct);

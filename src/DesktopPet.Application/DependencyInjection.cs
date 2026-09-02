@@ -10,6 +10,7 @@ using DesktopPet.Domain.Pets;
 using DesktopPet.Application.Movement;
 using DesktopPet.Application.Navigation;
 using DesktopPet.Application.Hotkeys;
+using DesktopPet.Application.Productivity;
 
 namespace DesktopPet.Application;
 
@@ -23,6 +24,19 @@ public static class DependencyInjection
         services.AddSingleton<ICommandRegistry, CommandRegistry>();
         services.AddSingleton<INavigationService, ControlCenterNavigationService>();
         services.AddSingleton<IHotkeyCoordinator, HotkeyCoordinator>();
+        services.AddSingleton<ProductivityEventHub>();
+        services.AddSingleton<IProductivityEventPublisher>(provider => provider.GetRequiredService<ProductivityEventHub>());
+        services.AddSingleton<IPomodoroService, PomodoroService>();
+        services.AddSingleton<ITaskService, TaskService>();
+        services.AddSingleton<ITagService, TagService>();
+        services.AddSingleton<IStatisticsService, StatisticsService>();
+        services.AddSingleton<IStatisticsExporter, CsvStatisticsExporter>();
+        services.AddSingleton<IReminderService, ReminderService>();
+        services.AddSingleton<IReminderOccurrenceProcessor, ReminderOccurrenceProcessor>();
+        services.AddSingleton<IMissedReminderResolver, MissedReminderResolver>();
+        services.AddSingleton<IReminderScheduler, ReminderScheduler>();
+        services.AddSingleton<IProductivityRecoveryService, ProductivityRecoveryService>();
+        services.AddSingleton<IReminderNotificationChannel, NoOpSoundReminderChannel>();
         services.AddSingleton<ICharacterPackageService, CharacterManager>();
         services.AddSingleton<CharacterPresentationService>();
         services.AddSingleton<RuntimePolicy>();
@@ -46,6 +60,11 @@ public static class DependencyInjection
             CommandId.OpenControlCenter, CommandId.CloseControlCenter, CommandId.Exit,
             CommandId.EnableTopmost, CommandId.DisableTopmost })
             services.AddSingleton<IAppCommand>(provider => new WindowCommand(id, provider.GetRequiredService<IWindowService>()));
+        services.AddSingleton<IAppCommand, PomodoroToggleCommand>();
+        services.AddSingleton<IAppCommand>(provider => new ProductivityNavigationCommand(CommandId.OpenPomodoro, AppPage.Pomodoro,
+            provider.GetRequiredService<INavigationService>(), provider.GetRequiredService<IWindowService>()));
+        services.AddSingleton<IAppCommand>(provider => new ProductivityNavigationCommand(CommandId.OpenReminders, AppPage.Reminders,
+            provider.GetRequiredService<INavigationService>(), provider.GetRequiredService<IWindowService>()));
         return services;
     }
 }

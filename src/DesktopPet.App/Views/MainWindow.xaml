@@ -8,6 +8,9 @@
         Foreground="{DynamicResource PrimaryTextBrush}" UseLayoutRounding="True">
   <Window.Resources>
     <DataTemplate DataType="{x:Type vm:HomeDashboardViewModel}"><pages:HomePage /></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:PomodoroViewModel}"><pages:PomodoroPage /></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:RemindersViewModel}"><pages:RemindersPage /></DataTemplate>
+    <DataTemplate DataType="{x:Type vm:StatisticsViewModel}"><pages:StatisticsPage /></DataTemplate>
     <DataTemplate DataType="{x:Type vm:CharacterManagerViewModel}"><pages:CharactersPage /></DataTemplate>
     <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><pages:SettingsPage /></DataTemplate>
     <DataTemplate DataType="{x:Type vm:HotkeysViewModel}"><pages:HotkeysPage /></DataTemplate>

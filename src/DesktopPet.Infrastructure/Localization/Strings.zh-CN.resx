@@ -141,4 +141,75 @@
   <data name="DiagnosticsTitle" xml:space="preserve"><value>诊断</value></data>
   <data name="DiagnosticsSubtitle" xml:space="preserve"><value>保留自前序阶段的本地开发诊断工具。</value></data>
   <data name="OfflineCoreStatus" xml:space="preserve"><value>离线小精灵核心独立于 AI 和网络服务。</value></data>
+  <data name="NavPomodoro" xml:space="preserve"><value>番茄钟</value></data>
+  <data name="NavReminders" xml:space="preserve"><value>提醒</value></data>
+  <data name="NavStatistics" xml:space="preserve"><value>统计</value></data>
+  <data name="HotkeyStartPausePomodoro" xml:space="preserve"><value>开始或暂停番茄钟</value></data>
+  <data name="PomodoroTitle" xml:space="preserve"><value>番茄钟</value></data>
+  <data name="PomodoroSubtitle" xml:space="preserve"><value>离线专注计时使用 UTC 绝对时间，可在重启或睡眠后正确恢复。</value></data>
+  <data name="PomodoroPhaseLabel" xml:space="preserve"><value>当前阶段</value></data>
+  <data name="PomodoroRemaining" xml:space="preserve"><value>剩余时间</value></data>
+  <data name="PomodoroStart" xml:space="preserve"><value>开始</value></data>
+  <data name="PomodoroStartPause" xml:space="preserve"><value>开始 / 暂停</value></data>
+  <data name="PomodoroPause" xml:space="preserve"><value>暂停</value></data>
+  <data name="PomodoroResume" xml:space="preserve"><value>继续</value></data>
+  <data name="PomodoroStop" xml:space="preserve"><value>停止</value></data>
+  <data name="PomodoroTask" xml:space="preserve"><value>任务</value></data>
+  <data name="PomodoroTags" xml:space="preserve"><value>标签</value></data>
+  <data name="PomodoroConsecutive" xml:space="preserve"><value>连续番茄数</value></data>
+  <data name="PomodoroTodayFocus" xml:space="preserve"><value>今日专注</value></data>
+  <data name="PomodoroSettings" xml:space="preserve"><value>番茄钟设置</value></data>
+  <data name="PomodoroSaveSettings" xml:space="preserve"><value>保存设置</value></data>
+  <data name="PomodoroAddTask" xml:space="preserve"><value>添加任务</value></data>
+  <data name="PomodoroArchiveTask" xml:space="preserve"><value>归档任务</value></data>
+  <data name="PomodoroAddTag" xml:space="preserve"><value>添加标签</value></data>
+  <data name="PomodoroAssignTag" xml:space="preserve"><value>关联标签</value></data>
+  <data name="PomodoroNoTask" xml:space="preserve"><value>未关联任务</value></data>
+  <data name="PomodoroIdle" xml:space="preserve"><value>准备开始</value></data>
+  <data name="RemindersTitle" xml:space="preserve"><value>提醒</value></data>
+  <data name="RemindersSubtitle" xml:space="preserve"><value>创建一次性或重复提醒，并分别配置通知渠道。</value></data>
+  <data name="ReminderAdd" xml:space="preserve"><value>新建</value></data>
+  <data name="ReminderUpdate" xml:space="preserve"><value>更新</value></data>
+  <data name="ReminderDelete" xml:space="preserve"><value>删除</value></data>
+  <data name="ReminderEnable" xml:space="preserve"><value>启用</value></data>
+  <data name="ReminderDisable" xml:space="preserve"><value>停用</value></data>
+  <data name="ReminderScheduleType" xml:space="preserve"><value>计划类型</value></data>
+  <data name="ReminderDue" xml:space="preserve"><value>触发时间</value></data>
+  <data name="ReminderRecurrence" xml:space="preserve"><value>重复规则</value></data>
+  <data name="ReminderTimeZone" xml:space="preserve"><value>时区</value></data>
+  <data name="ReminderNextTrigger" xml:space="preserve"><value>下次触发</value></data>
+  <data name="ReminderChannelsLabel" xml:space="preserve"><value>通知渠道</value></data>
+  <data name="ReminderEmpty" xml:space="preserve"><value>暂无即将触发的提醒</value></data>
+  <data name="ReminderDeleteConfirm" xml:space="preserve"><value>确定删除提醒“{0}”吗？此操作无法撤销。</value></data>
+  <data name="StatisticsTitle" xml:space="preserve"><value>统计</value></data>
+  <data name="StatisticsSubtitle" xml:space="preserve"><value>专注统计来自持久化记录，并按当前时区计算。</value></data>
+  <data name="StatisticsTodayFocus" xml:space="preserve"><value>今日专注</value></data>
+  <data name="StatisticsTodayCompleted" xml:space="preserve"><value>今日完成番茄</value></data>
+  <data name="StatisticsStreak" xml:space="preserve"><value>连续专注天数</value></data>
+  <data name="StatisticsDaily" xml:space="preserve"><value>日趋势</value></data>
+  <data name="StatisticsWeekly" xml:space="preserve"><value>周趋势</value></data>
+  <data name="StatisticsMonthly" xml:space="preserve"><value>月趋势</value></data>
+  <data name="StatisticsTaskSummary" xml:space="preserve"><value>任务统计</value></data>
+  <data name="StatisticsTagSummary" xml:space="preserve"><value>标签统计</value></data>
+  <data name="HomePomodoroCard" xml:space="preserve"><value>番茄钟</value></data>
+  <data name="HomeTodayFocusCard" xml:space="preserve"><value>今日专注</value></data>
+  <data name="HomeRecentReminderCard" xml:space="preserve"><value>最近提醒</value></data>
+  <data name="OpenPomodoro" xml:space="preserve"><value>打开番茄钟</value></data>
+  <data name="OpenReminders" xml:space="preserve"><value>打开提醒</value></data>
+  <data name="FocusDuration" xml:space="preserve"><value>专注分钟</value></data>
+  <data name="ShortBreakDuration" xml:space="preserve"><value>短休息分钟</value></data>
+  <data name="LongBreakDuration" xml:space="preserve"><value>长休息分钟</value></data>
+  <data name="LongBreakIntervalLabel" xml:space="preserve"><value>长休息间隔</value></data>
+  <data name="AutoStartNextPhase" xml:space="preserve"><value>自动开始下一阶段</value></data>
+  <data name="ReminderTitleLabel" xml:space="preserve"><value>标题</value></data>
+  <data name="ReminderDescriptionLabel" xml:space="preserve"><value>说明</value></data>
+  <data name="ReminderRelativeMinutes" xml:space="preserve"><value>相对分钟数</value></data>
+  <data name="ReminderAbsoluteLocal" xml:space="preserve"><value>绝对本地时间（yyyy-MM-dd HH:mm）</value></data>
+  <data name="ReminderRecurringTime" xml:space="preserve"><value>时间</value></data>
+  <data name="ReminderIntervalDays" xml:space="preserve"><value>间隔天数</value></data>
+  <data name="ReminderWeekdays" xml:space="preserve"><value>星期</value></data>
+  <data name="ChannelPetBubble" xml:space="preserve"><value>精灵气泡</value></data>
+  <data name="ChannelPetAction" xml:space="preserve"><value>精灵动作</value></data>
+  <data name="ChannelWindows" xml:space="preserve"><value>Windows 通知</value></data>
+  <data name="ChannelSound" xml:space="preserve"><value>声音</value></data>
 </root>

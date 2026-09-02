@@ -13,6 +13,7 @@ using DesktopPet.Infrastructure.Persistence;
 using DesktopPet.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 using DesktopPet.Application.Runtime;
+using DesktopPet.Application.Productivity;
 
 namespace DesktopPet.Infrastructure;
 
@@ -28,6 +29,10 @@ public static class DependencyInjection
         services.AddSingleton<ICharacterBehaviorProfileReader, CharacterBehaviorProfileReader>();
         services.AddSingleton<ITextLocalizer, ResourceTextLocalizer>();
         services.AddSingleton<ISqliteConnectionFactory, SqliteConnectionFactory>();
+        services.AddSingleton<IPomodoroRepository, SqlitePomodoroRepository>();
+        services.AddSingleton<ITaskRepository, SqliteTaskRepository>();
+        services.AddSingleton<ITagRepository, SqliteTagRepository>();
+        services.AddSingleton<IReminderRepository, SqliteReminderRepository>();
         foreach (var migration in InitialMigrations.Create()) services.AddSingleton(migration);
         services.AddSingleton<IDatabaseMigrator, SqliteDatabaseMigrator>();
         services.AddSingleton<IUpdateService, NoOpUpdateService>();

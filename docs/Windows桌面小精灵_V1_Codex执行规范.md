@@ -415,3 +415,15 @@ Codex 每次只处理一个 Phase，并输出：
 - IHotkeyService 是 Windows RegisterHotKey 适配器；IHotkeyCoordinator 负责注册、冲突回滚、持久化、命令分发和退出释放。启用组合必须含修饰键且互不重复；Windows 403/网络重试规则与此离线能力无关。
 - zh-CN/en-US 通过 ITextLocalizer 事件即时刷新；System/Light/Dark 由 IAppearanceService 集中更新 WPF 动态资源。系统主题变化的实时监听留作后续体验调优，不伪装为已实现自动更新。
 - 双库 Schema 未改变；没有实现 Pomodoro、Reminder、Statistics、AI、TTS、自动更新、多角色或 Phase 6+ 页面。验证与实际环境限制见 Phase-5-开发报告.md 和 Phase-5-人工测试文档.md。
+
+## 26. Phase 6 实施契约注释（2026-09-01）
+
+- Phase 0–5 基线及 `v0.5-phase5` 由用户确认；本阶段只实现离线 Productivity，不引入 AI Provider、自然语言提醒、TTS、备份或 Phase 7+ 业务。
+- app.db 追加只向前的 v2 migration：Tasks、Tags、TaskTags、PomodoroSessions、Reminders、ReminderExecutions。ScheduleJson 只在 Infrastructure 转换为强类型 Schedule；UI/Application 不直接 SQL 或手写持久化 JSON。ai.db 不变。
+- Pomodoro 以 UTC 绝对目标时间为业务真相；UI 的一秒刷新只重绘。Running/Paused 可恢复，Stop/Complete 分离，完成写库成功后才发布事件；单活动 Session 约束和服务串行化避免重叠与重复完成。
+- Task 采用 Archive 保留历史 Session；TaskTag 是当前分类关系。统计完全从持久化终态 Focus Session 推导，并在 Application 按用户 TimeZone 转换为本地日期；Stopped 只贡献实际时长，Completed 才贡献完成数与 Streak。
+- Reminder 使用单个可取消的“最近到期”等待器，CRUD/启停唤醒重算。ReminderExecution 与下一触发时间同事务提交并按 occurrence 去重，之后才发送渠道通知。默认 Smart 补发窗口 15 分钟，重复提醒只处理最近一次。
+- DST 无效本地时间确定性前移到首个有效分钟；重复本地时间选择较早发生的 UTC 时刻。相对/绝对/重复规则和 TimeZoneId 均为强类型领域模型，数据库 JSON 版本为 1。
+- Pet Bubble、Pet Action、Windows Notification 为独立渠道，Sound 为不影响其他渠道的 NoOp；不接入 TTS。ProductivityEvent 将专注上下文和短暂 Happy 反馈送入 PetRuntime，服务不直接操作 WPF。
+- WindowsSessionStateService 仅在 Windows 层监听锁屏/睡眠/恢复。启动顺序为 DB migration → Settings → Productivity/Missed Reminder → PetRuntime；唤醒先重新计算业务，再恢复 Runtime。退出等待页面刷新循环并取消 Pomodoro/Reminder 调度器。
+- Settings schema 7 增加 Pomodoro 与漏提醒窗口配置，schema 1–6 向前迁移；Command Registry、Tray、Hotkey 共享 StartOrPausePomodoro/OpenPomodoro/OpenReminders。验证与人工限制见 Phase-6-开发报告.md 和 Phase-6-人工测试文档.md。

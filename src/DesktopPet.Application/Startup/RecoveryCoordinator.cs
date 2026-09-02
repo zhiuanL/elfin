@@ -1,6 +1,7 @@
 using DesktopPet.Application.Configuration;
 using DesktopPet.Application.Diagnostics;
 using DesktopPet.Application.Storage;
+using DesktopPet.Application.Contracts;
 
 namespace DesktopPet.Application.Startup;
 
@@ -10,7 +11,7 @@ public interface IRecoveryCoordinator
     Task<StartupResult> InitializeAsync(CancellationToken ct);
 }
 public sealed class RecoveryCoordinator(IAppDataDirectories directories, IDatabaseMigrator migrator,
-    ISettingsService settings, IExceptionHandler exceptions) : IRecoveryCoordinator
+    ISettingsService settings, IExceptionHandler exceptions, IProductivityRecoveryService? productivity = null) : IRecoveryCoordinator
 {
     public async Task<StartupResult> InitializeAsync(CancellationToken ct)
     {
@@ -29,7 +30,7 @@ public sealed class RecoveryCoordinator(IAppDataDirectories directories, IDataba
             aiFailure = exceptions.Report(exception, ErrorCode.AiStorageUnavailable, ErrorOrigin.AiStorage);
         }
         var result = await settings.LoadAsync(ct);
-        // Pet/timer/reminder recovery hooks are introduced in their respective phases.
+        if (productivity is not null) await productivity.RecoverAsync(ct);
         return new(result.Status, aiFailure is null, aiFailure);
     }
 }

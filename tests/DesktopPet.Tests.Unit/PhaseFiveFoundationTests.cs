@@ -45,7 +45,7 @@ public sealed class PhaseFiveFoundationTests
         await using var coordinator = new HotkeyCoordinator(platform, new CommandRegistry([command]), settings,
             new ExceptionHandler(logger, TimeProvider.System));
         Assert.True((await coordinator.InitializeAsync(default)).Succeeded);
-        Assert.Equal(6, platform.RegisteredCommands.Count);
+        Assert.Equal(7, platform.RegisteredCommands.Count);
 
         platform.Emit(CommandId.ShowPet);
         await command.Called.Task.WaitAsync(TimeSpan.FromSeconds(2));
@@ -60,7 +60,7 @@ public sealed class PhaseFiveFoundationTests
         Assert.False(conflict.Succeeded);
         Assert.Equal(CommandId.HidePet, conflict.FailedCommand);
         Assert.Equal(prior, coordinator.Current);
-        Assert.Equal(6, platform.RegisteredCommands.Count);
+        Assert.Equal(7, platform.RegisteredCommands.Count);
 
         var disabled = new HotkeySettings { Bindings = prior.Bindings.Select(item =>
             item.Command == CommandId.HidePet ? item with { Enabled = false } : item).ToArray() };

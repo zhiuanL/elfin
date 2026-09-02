@@ -105,6 +105,7 @@ public sealed class HotkeysViewModel : ObservableViewModel, IDisposable
         CommandId.TogglePetVisibility => TextKey.HotkeyTogglePet,
         CommandId.ToggleClickThrough => TextKey.HotkeyToggleClickThrough,
         CommandId.TemporaryClickThrough => TextKey.HotkeyTemporaryClickThrough,
+        CommandId.StartOrPausePomodoro => TextKey.HotkeyStartPausePomodoro,
         _ => throw new ArgumentOutOfRangeException(nameof(id))
     });
     private void Report(Exception exception)

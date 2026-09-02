@@ -98,7 +98,8 @@ public sealed class WindowLifecycleTests
         using var fixture = new Fixture();
         await fixture.Service.InitializeAsync(default);
         var items = TrayMenuDefinition.Create();
-        Assert.Equal(new[] { CommandId.ShowPet, CommandId.HidePet, CommandId.OpenControlCenter, CommandId.Exit }, items.Select(item => item.Command));
+        Assert.Equal(new[] { CommandId.ShowPet, CommandId.HidePet, CommandId.StartOrPausePomodoro,
+            CommandId.OpenControlCenter, CommandId.Exit }, items.Select(item => item.Command));
         Assert.Equal(items.Count, items.Select(item => item.Label).Distinct().Count());
         foreach (var item in items)
             Assert.Equal(CommandStatus.Completed, (await fixture.Commands.ExecuteAsync(item.Command, default)).Status);
@@ -139,9 +140,16 @@ public sealed class WindowLifecycleTests
         {
             Service = new(Settings, Pet, Control, Displays, Tray, new InlineDispatcher(), new(), Lifetime);
             Commands = new(new[] { CommandId.ShowPet, CommandId.HidePet, CommandId.TogglePetVisibility,
-                CommandId.OpenControlCenter, CommandId.CloseControlCenter, CommandId.Exit }.Select(id => new WindowCommand(id, Service)));
+                CommandId.OpenControlCenter, CommandId.CloseControlCenter, CommandId.Exit }.Select(id => (IAppCommand)new WindowCommand(id, Service))
+                .Append(new StubCommand(CommandId.StartOrPausePomodoro)));
         }
         public void Dispose() => Service.Dispose();
+    }
+    private sealed class StubCommand(CommandId id) : IAppCommand
+    {
+        public CommandId Id { get; } = id;
+        public Task<CommandResult> ExecuteAsync(CancellationToken ct)
+        { ct.ThrowIfCancellationRequested(); return Task.FromResult(new CommandResult(CommandStatus.Completed)); }
     }
     private sealed class InlineDispatcher : IUiDispatcher
     {

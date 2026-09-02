@@ -5,9 +5,15 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         Topmost="True" ShowInTaskbar="False" ShowActivated="False"
         WindowStartupLocation="Manual" UseLayoutRounding="True">
+  <Window.Resources><BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/></Window.Resources>
   <Grid ToolTip="{Binding Hint}" AutomationProperties.Name="{Binding Hint}">
     <Image Source="{Binding Character.Frame}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" RenderTransformOrigin="0.5,0.5">
       <Image.RenderTransform><ScaleTransform ScaleX="{Binding Character.ScaleX}" /></Image.RenderTransform>
     </Image>
+    <Border VerticalAlignment="Top" HorizontalAlignment="Center" MaxWidth="205" Padding="10,7"
+            Background="#EEFFFFFF" BorderBrush="#33000000" BorderThickness="1" CornerRadius="10"
+            Visibility="{Binding IsBubbleVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+      <TextBlock Text="{Binding BubbleText}" Foreground="#FF202020" TextWrapping="Wrap" TextAlignment="Center"/>
+    </Border>
   </Grid>
 </Window>

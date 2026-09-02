@@ -47,9 +47,15 @@ public static class AppBootstrapper
         builder.Services.AddSingleton<SettingsViewModel>();
         builder.Services.AddSingleton<HotkeysViewModel>();
         builder.Services.AddSingleton<DiagnosticsPageViewModel>();
+        builder.Services.AddSingleton<PomodoroViewModel>();
+        builder.Services.AddSingleton<RemindersViewModel>();
+        builder.Services.AddSingleton<StatisticsViewModel>();
         builder.Services.AddSingleton<MainWindowViewModel>();
         builder.Services.AddSingleton<MainWindow>();
         builder.Services.AddSingleton<PetWindowViewModel>();
+        builder.Services.AddSingleton<IPetBubbleService>(provider => provider.GetRequiredService<PetWindowViewModel>());
+        builder.Services.AddSingleton<IReminderNotificationChannel, DesktopPet.Application.Productivity.PetBubbleReminderChannel>();
+        builder.Services.AddSingleton<IReminderNotificationChannel, PetActionReminderChannel>();
         builder.Services.AddSingleton<PetWindow>();
         builder.Services.AddSingleton<IUiDispatcher>(_ => new WpfUiDispatcher(System.Windows.Threading.Dispatcher.CurrentDispatcher));
         builder.Services.AddSingleton<IAppearanceService, WpfAppearanceService>();
@@ -57,6 +63,7 @@ public static class AppBootstrapper
         builder.Services.AddSingleton<IControlCenterWindow>(provider => new WindowsControlCenterWindow(provider.GetRequiredService<MainWindow>()));
         builder.Services.AddSingleton<WindowEventBridge>();
         builder.Services.AddSingleton<DesktopApplication>();
+        builder.Services.AddSingleton<ProductivityRuntimeBridge>();
         return builder.Build();
     }
 

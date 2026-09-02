@@ -32,7 +32,8 @@ public sealed record RecentBehaviorContext(IReadOnlyList<BehaviorExecution> Rece
 }
 public sealed record BehaviorContext(DateTimeOffset Now, PetPrimaryState CurrentState, EmotionState EmotionState,
     RecentBehaviorContext RecentBehaviors, IReadOnlySet<AnimationSemantic> CurrentCharacterCapabilities,
-    DateTimeOffset? LastInteractionTime, bool IsPetVisible, bool IsUserInteracting, TimeOnly TimeOfDay);
+    DateTimeOffset? LastInteractionTime, bool IsPetVisible, bool IsUserInteracting, TimeOnly TimeOfDay,
+    bool FocusMode = false, DesktopPet.Domain.Productivity.PomodoroPhase? PomodoroPhase = null);
 public sealed record UtilityScore(BehaviorId Behavior, double BaseWeight, double CharacterModifier, double EmotionModifier,
     double ContextModifier, double UserModifier, double RecentModifier, double FinalScore, CandidateFilter Filter, TimeSpan CooldownRemaining);
 public sealed record BehaviorDecision(BehaviorDefinition Behavior, IReadOnlyList<UtilityScore> Scores, bool UsedFallback);

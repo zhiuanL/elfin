@@ -33,7 +33,9 @@ public sealed class UtilityDecisionEngine(RuntimePolicy policy, IRandomSource ra
                 CandidateFilter.RecentRepeat : CandidateFilter.None;
         var emotion = behavior.EmotionModifiers.Aggregate(1.0, (product, modifier) => RuntimeLimits.Factor(product * modifier.Evaluate(context.EmotionState)));
         var interaction = context.LastInteractionTime is { } at && context.Now >= at && context.Now - at < policy.InteractionWindow;
-        var environment = behavior.Id == BehaviorId.Happy && interaction ? policy.RecentInteractionBoost :
+        var environment = context.FocusMode && behavior.Id == BehaviorId.Move ? 0.15 :
+            context.FocusMode && behavior.Id == BehaviorId.Talking ? 0.35 :
+            behavior.Id == BehaviorId.Happy && interaction ? policy.RecentInteractionBoost :
             behavior.Id == BehaviorId.Rest && (context.TimeOfDay >= policy.NightStarts || context.TimeOfDay < policy.NightEnds) ? policy.NightRestBoost : 1;
         var suppression = behavior.Id == BehaviorId.Idle ? 1 : Math.Pow(policy.RepeatPenalty, recent.ExecutionCountInWindow(behavior.Id));
         var basis = RuntimeLimits.Clamp(behavior.BaseWeight, 0, policy.MaxWeight);

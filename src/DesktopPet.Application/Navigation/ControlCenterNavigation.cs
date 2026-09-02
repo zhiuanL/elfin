@@ -11,13 +11,14 @@ public interface INavigationService
 }
 public sealed class ControlCenterNavigationService : INavigationService
 {
-    private static readonly HashSet<AppPage> PhaseFivePages =
-        [AppPage.Home, AppPage.Characters, AppPage.Settings, AppPage.Hotkeys, AppPage.Diagnostics];
+    private static readonly HashSet<AppPage> AvailablePages =
+        [AppPage.Home, AppPage.Pomodoro, AppPage.Reminders, AppPage.Statistics,
+         AppPage.Characters, AppPage.Settings, AppPage.Hotkeys, AppPage.Diagnostics];
     public AppPage Current { get; private set; } = AppPage.Home;
     public event EventHandler<NavigationChangedEventArgs>? Changed;
     public void Navigate(AppPage page)
     {
-        if (!PhaseFivePages.Contains(page)) throw new ArgumentOutOfRangeException(nameof(page));
+        if (!AvailablePages.Contains(page)) throw new ArgumentOutOfRangeException(nameof(page));
         if (Current == page) return;
         Current = page;
         Changed?.Invoke(this, new(page));

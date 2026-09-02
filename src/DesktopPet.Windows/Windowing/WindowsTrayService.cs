@@ -1,13 +1,14 @@
 using System.Drawing;
 using System.Windows.Forms;
 using DesktopPet.Application.Commands;
+using DesktopPet.Application.Contracts;
 using DesktopPet.Application.Localization;
 using DesktopPet.Application.Windows;
 using DesktopPet.Domain.Platform;
 
 namespace DesktopPet.Windows.Windowing;
 
-public sealed class WindowsTrayService(ITextLocalizer text) : ITrayService
+public sealed class WindowsTrayService(ITextLocalizer text) : ITrayService, INotificationService
 {
     private NotifyIcon? _icon;
     private Icon? _image;
@@ -38,6 +39,13 @@ public sealed class WindowsTrayService(ITextLocalizer text) : ITrayService
         _menu.Show(new Point(checked((int)Math.Round(position.X)), checked((int)Math.Round(position.Y))));
     }
     private void OnDoubleClick(object? sender, EventArgs e) => CommandRequested?.Invoke(this, new(CommandId.OpenControlCenter));
+    public Task ShowAsync(string title, string message, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        Start();
+        _icon!.ShowBalloonTip(5000, title, message, ToolTipIcon.Info);
+        return Task.CompletedTask;
+    }
     public void Dispose()
     {
         if (_disposed) return;

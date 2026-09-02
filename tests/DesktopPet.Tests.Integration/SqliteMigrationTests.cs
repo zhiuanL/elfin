@@ -8,6 +8,8 @@ public sealed class SqliteMigrationTests
 {
     private static ISqliteMigration Schema(int version, string sql) =>
         new SqliteMigration(DatabaseKind.App, version, "test-" + version, sql);
+    private static IEnumerable<ISqliteMigration> LedgerOnly() =>
+        InitialMigrations.Create().Where(item => item.Database != DatabaseKind.App || item.Version == 1);
 
     [Fact]
     public async Task EmptyDatabasesCreateIndependentLedgersAndAreIdempotent()
@@ -18,8 +20,8 @@ public sealed class SqliteMigrationTests
             await env.Migrator().MigrateAsync(database, default);
             await env.Migrator().MigrateAsync(database, default);
             await using var connection = await env.Connections.OpenAsync(database, default);
-            Assert.Equal(1L, await Scalar(connection, "SELECT COUNT(*) FROM SchemaMigrations;"));
-            Assert.Equal(1L, await Scalar(connection, "SELECT COUNT(*) FROM sqlite_master WHERE type='table';"));
+            Assert.Equal(database == DatabaseKind.App ? 2L : 1L, await Scalar(connection, "SELECT COUNT(*) FROM SchemaMigrations;"));
+            Assert.Equal(database == DatabaseKind.App ? 7L : 1L, await Scalar(connection, "SELECT COUNT(*) FROM sqlite_master WHERE type='table';"));
         }
         Assert.True(File.Exists(Path.Combine(env.Directories.Data, "app.db")));
         Assert.True(File.Exists(Path.Combine(env.Directories.Data, "ai.db")));
@@ -30,7 +32,7 @@ public sealed class SqliteMigrationTests
     public async Task UpgradePreservesDataAndMakesRestorableWalAwareBackup()
     {
         using var env = new TestEnvironment();
-        var old = InitialMigrations.Create().Append(Schema(2, "CREATE TABLE TestValues (Value TEXT NOT NULL);"));
+        var old = LedgerOnly().Append(Schema(2, "CREATE TABLE TestValues (Value TEXT NOT NULL);"));
         await env.Migrator(old).MigrateAsync(DatabaseKind.App, default);
         await using (var connection = await env.Connections.OpenAsync(DatabaseKind.App, default))
         {
@@ -58,11 +60,11 @@ public sealed class SqliteMigrationTests
         using var env = new TestEnvironment();
         await env.Migrator().MigrateAsync(DatabaseKind.App, default);
         var pending = InitialMigrations.Create()
-            .Append(Schema(2, "CREATE TABLE PendingWork (Value TEXT);"))
-            .Append(Schema(3, "INSERT INTO MissingTable VALUES (1);"));
+            .Append(Schema(3, "CREATE TABLE PendingWork (Value TEXT);"))
+            .Append(Schema(4, "INSERT INTO MissingTable VALUES (1);"));
         await Assert.ThrowsAsync<SqliteException>(() => env.Migrator(pending).MigrateAsync(DatabaseKind.App, default));
         await using var connection = await env.Connections.OpenAsync(DatabaseKind.App, default);
-        Assert.Equal(1L, await Scalar(connection, "SELECT MAX(Version) FROM SchemaMigrations;"));
+        Assert.Equal(2L, await Scalar(connection, "SELECT MAX(Version) FROM SchemaMigrations;"));
         Assert.Equal(0L, await Scalar(connection, "SELECT COUNT(*) FROM sqlite_master WHERE name='PendingWork';"));
         Assert.Single(Directory.GetFiles(env.Directories.Backups));
         await env.Migrator().MigrateAsync(DatabaseKind.App, default);
@@ -85,7 +87,7 @@ public sealed class SqliteMigrationTests
         await env.Migrator().MigrateAsync(DatabaseKind.App, default);
         var changed = new[] { new SqliteMigration(DatabaseKind.App, 1, "schema-history", InitialMigrations.HistorySql + "\n") };
         await Assert.ThrowsAsync<MigrationHistoryException>(() => env.Migrator(changed).MigrateAsync(DatabaseKind.App, default));
-        var newer = InitialMigrations.Create().Append(Schema(2, "CREATE TABLE FutureData (Id INTEGER);"));
+        var newer = InitialMigrations.Create().Append(Schema(3, "CREATE TABLE FutureData (Id INTEGER);"));
         await env.Migrator(newer).MigrateAsync(DatabaseKind.App, default);
         await Assert.ThrowsAsync<MigrationHistoryException>(() => env.Migrator().MigrateAsync(DatabaseKind.App, default));
     }
@@ -107,7 +109,7 @@ public sealed class SqliteMigrationTests
     public async Task GappedDefinitionsAreRejectedBeforeWriting()
     {
         using var env = new TestEnvironment();
-        var invalid = InitialMigrations.Create().Append(Schema(3, "CREATE TABLE Invalid (Id INTEGER);"));
+        var invalid = InitialMigrations.Create().Append(Schema(4, "CREATE TABLE Invalid (Id INTEGER);"));
         await Assert.ThrowsAsync<MigrationHistoryException>(() => env.Migrator(invalid).MigrateAsync(DatabaseKind.App, default));
         Assert.False(File.Exists(Path.Combine(env.Directories.Data, "app.db")));
     }
@@ -127,12 +129,12 @@ public sealed class SqliteMigrationTests
         using var env = new TestEnvironment();
         using var cancellation = new CancellationTokenSource();
         await env.Migrator().MigrateAsync(DatabaseKind.App, default);
-        var pending = InitialMigrations.Create().Append(Schema(2, "CREATE TABLE PendingWork (Id INTEGER);"))
+        var pending = InitialMigrations.Create().Append(Schema(3, "CREATE TABLE PendingWork (Id INTEGER);"))
             .Append(new CancellingMigration(cancellation));
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
             env.Migrator(pending).MigrateAsync(DatabaseKind.App, cancellation.Token));
         await using var connection = await env.Connections.OpenAsync(DatabaseKind.App, default);
-        Assert.Equal(1L, await Scalar(connection, "SELECT MAX(Version) FROM SchemaMigrations;"));
+        Assert.Equal(2L, await Scalar(connection, "SELECT MAX(Version) FROM SchemaMigrations;"));
         Assert.Equal(0L, await Scalar(connection, "SELECT COUNT(*) FROM sqlite_master WHERE name='PendingWork';"));
     }
 
@@ -140,14 +142,14 @@ public sealed class SqliteMigrationTests
     {
         private int _reads;
         public DatabaseKind Database => DatabaseKind.App;
-        public int Version => 3;
+        public int Version => 4;
         public string Name => "cancel";
         public string Checksum => "cancel-test";
         public string Sql
         {
             get
             {
-                // The first read validates the catalog; cancel on execution after migration 2 ran.
+                // The first read validates the catalog; cancel on execution after migration 3 ran.
                 if (++_reads > 1) cancellation.Cancel();
                 return "CREATE TABLE CancelledWork (Id INTEGER);";
             }
