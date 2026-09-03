@@ -60,6 +60,7 @@ public static class AppBootstrapper
         builder.Services.AddSingleton<IReminderNotificationChannel, PetActionReminderChannel>();
         builder.Services.AddSingleton<PetWindow>();
         builder.Services.AddSingleton<IUiDispatcher>(_ => new WpfUiDispatcher(System.Windows.Threading.Dispatcher.CurrentDispatcher));
+        builder.Services.AddSingleton<DesktopPet.AI.Contracts.IToolConfirmationService, WpfToolConfirmationService>();
         builder.Services.AddSingleton<IAppearanceService, WpfAppearanceService>();
         builder.Services.AddSingleton<IPetWindow>(provider => new WindowsPetWindow(provider.GetRequiredService<PetWindow>()));
         builder.Services.AddSingleton<IControlCenterWindow>(provider => new WindowsControlCenterWindow(provider.GetRequiredService<MainWindow>()));

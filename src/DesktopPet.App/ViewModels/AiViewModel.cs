@@ -14,25 +14,31 @@ public sealed record AiMessageItem(ChatRole Role, string Content, MessageStatus 
 public sealed class AiViewModel : ObservableViewModel, IDisposable
 {
     private readonly IAiChatService _chat; private readonly IAiProviderService _providers; private readonly IMemoryService _memories;
-    private readonly PetHost _pets; private readonly ITextLocalizer _text; private readonly CancellationTokenSource _lifetime = new();
+    private readonly PetHost _pets; private readonly ITextLocalizer _text; private readonly IAiToolRegistry _tools; private readonly CancellationTokenSource _lifetime = new();
     private bool _initialized, _busy, _autoMemory, _saveKey = true, _loadingProvider; private string _input = "", _lastInput = "", _notice = "";
     private Conversation? _conversation; private AiProviderProfile? _profile; private MemoryItem? _memory;
     private string _providerName = "", _baseUrl = "", _model = "", _apiKey = "", _memoryContent = "", _memoryTags = "", _memoryKeywords = "";
     private AiProviderType _providerType; private MemoryCategory _memoryCategory; private int _timeoutSeconds = 30, _memoryImportance = 3;
-    public AiViewModel(IAiChatService chat, IAiProviderService providers, IMemoryService memories, PetHost pets, ITextLocalizer text)
+    private bool _toolsEnabled; private MediumConfirmationPreference _mediumConfirmation; private AiToolState? _selectedTool;
+    public AiViewModel(IAiChatService chat, IAiProviderService providers, IMemoryService memories, PetHost pets, ITextLocalizer text,
+        IAiToolRegistry tools)
     {
-        _chat = chat; _providers = providers; _memories = memories; _pets = pets; _text = text;
+        _chat = chat; _providers = providers; _memories = memories; _pets = pets; _text = text; _tools = tools;
         SendCommand = Command(SendAsync, () => !Busy && !string.IsNullOrWhiteSpace(Input)); StopCommand = Command(() => _chat.StopAsync(_lifetime.Token), () => Busy);
         RetryCommand = Command(RetryAsync, () => !Busy && !string.IsNullOrWhiteSpace(_lastInput)); NewTemporaryCommand = Command(() => CreateConversationAsync(ConversationType.Temporary)); NewTopicCommand = Command(() => CreateConversationAsync(ConversationType.Topic));
         NewProviderCommand = Command(() => { ClearProviderEditor(); return Task.CompletedTask; }); FetchModelsCommand = Command(FetchModelsAsync, CanFetchModels); SaveProviderCommand = Command(SaveProviderAsync); TestProviderCommand = Command(TestProviderAsync, () => SelectedProvider is not null); SetActiveCommand = Command(SetActiveAsync, () => SelectedProvider is not null); DeleteProviderCommand = Command(DeleteProviderAsync, () => SelectedProvider is not null);
         SaveMemoryCommand = Command(SaveMemoryAsync); DeleteMemoryCommand = Command(DeleteMemoryAsync, () => SelectedMemory is not null); ClearCharacterMemoriesCommand = Command(ClearCharacterMemoriesAsync); ClearAllMemoriesCommand = Command(ClearAllMemoriesAsync);
+        ApplyToolSettingsCommand = Command(ApplyToolSettingsAsync);
+        ToggleSelectedToolCommand = Command(ToggleSelectedToolAsync, () => SelectedTool?.CanChangeEnabled == true);
         ApplyProviderDefaults();
         _text.CultureChanged += OnCultureChanged;
     }
     public ObservableCollection<Conversation> Conversations { get; } = []; public ObservableCollection<AiMessageItem> Messages { get; } = [];
     public ObservableCollection<AiProviderProfile> ProviderProfiles { get; } = []; public ObservableCollection<MemoryItem> Memories { get; } = [];
     public ObservableCollection<string> AvailableModels { get; } = [];
+    public ObservableCollection<AiToolState> ToolStates { get; } = []; public ObservableCollection<AiToolAuditEntry> ToolAudit { get; } = [];
     public IReadOnlyList<AiProviderType> ProviderTypes { get; } = Enum.GetValues<AiProviderType>(); public IReadOnlyList<MemoryCategory> MemoryCategories { get; } = Enum.GetValues<MemoryCategory>();
+    public IReadOnlyList<MediumConfirmationPreference> MediumConfirmationPreferences { get; } = Enum.GetValues<MediumConfirmationPreference>();
     public string Title => _text.Get(TextKey.AiTitle); public string Subtitle => _text.Get(TextKey.AiSubtitle);
     public string SetupTitle => ProviderProfiles.Count == 0 ? _text.Get(TextKey.AiSetupRequired) : _text.Get(TextKey.AiProviderSettings);
     public string ConversationsText => _text.Get(TextKey.AiConversations); public string MessagesText => _text.Get(TextKey.AiMessages);
@@ -41,6 +47,10 @@ public sealed class AiViewModel : ObservableViewModel, IDisposable
     public string ProviderText => _text.Get(TextKey.AiProvider); public string DisplayNameText => _text.Get(TextKey.AiDisplayName); public string BaseUrlText => _text.Get(TextKey.AiBaseUrl); public string ModelText => _text.Get(TextKey.AiModel); public string ApiKeyText => _text.Get(TextKey.AiApiKey); public string SaveKeyText => _text.Get(TextKey.AiSaveKey); public string TimeoutText => _text.Get(TextKey.AiTimeout);
     public string NewProviderText => _text.Get(TextKey.AiNewProvider); public string FetchModelsText => _text.Get(TextKey.AiFetchModels); public string SaveProviderText => _text.Get(TextKey.AiSaveProvider); public string TestConnectionText => _text.Get(TextKey.AiTestConnection); public string SetActiveText => _text.Get(TextKey.AiSetActive); public string DeleteProviderText => _text.Get(TextKey.AiDeleteProvider);
     public string AutoMemoryText => _text.Get(TextKey.AiAutoMemory); public string MemoryContentText => _text.Get(TextKey.AiMemoryContent); public string CategoryText => _text.Get(TextKey.AiCategory); public string ImportanceText => _text.Get(TextKey.AiImportance); public string TagsText => _text.Get(TextKey.AiTags); public string KeywordsText => _text.Get(TextKey.AiKeywords); public string SaveMemoryText => _text.Get(TextKey.AiSaveMemory); public string DeleteMemoryText => _text.Get(TextKey.AiDeleteMemory); public string ClearCharacterText => _text.Get(TextKey.AiClearCharacter); public string ClearAllText => _text.Get(TextKey.AiClearAll);
+    public string ToolsText => _text.Get(TextKey.AiTools); public string ToolsEnabledText => _text.Get(TextKey.AiToolsEnabled);
+    public string MediumConfirmationText => _text.Get(TextKey.AiMediumConfirmation); public string SaveToolSettingsText => _text.Get(TextKey.AiSaveToolSettings);
+    public string AvailableToolsText => _text.Get(TextKey.AiAvailableTools); public string ToggleSelectedToolText => _text.Get(TextKey.AiToggleSelectedTool);
+    public string RecentToolAuditText => _text.Get(TextKey.AiRecentToolAudit);
     public string Input { get => _input; set { _input = value; OnPropertyChanged(); NotifyCommands(); } }
     public string Notice { get => _notice; private set { _notice = value; OnPropertyChanged(); } }
     public bool Busy { get => _busy; private set { _busy = value; OnPropertyChanged(); NotifyCommands(); } }
@@ -54,12 +64,16 @@ public sealed class AiViewModel : ObservableViewModel, IDisposable
     public bool AutoMemory { get => _autoMemory; set { if (_autoMemory == value) return; _autoMemory = value; OnPropertyChanged(); _ = SetAutoMemoryAsync(value); } }
     public string MemoryContent { get => _memoryContent; set { _memoryContent = value; OnPropertyChanged(); } } public MemoryCategory MemoryCategory { get => _memoryCategory; set { _memoryCategory = value; OnPropertyChanged(); } }
     public int MemoryImportance { get => _memoryImportance; set { _memoryImportance = value; OnPropertyChanged(); } } public string MemoryTags { get => _memoryTags; set { _memoryTags = value; OnPropertyChanged(); } } public string MemoryKeywords { get => _memoryKeywords; set { _memoryKeywords = value; OnPropertyChanged(); } }
+    public bool ToolsEnabled { get => _toolsEnabled; set { _toolsEnabled = value; OnPropertyChanged(); } }
+    public MediumConfirmationPreference MediumConfirmation { get => _mediumConfirmation; set { _mediumConfirmation = value; OnPropertyChanged(); } }
+    public AiToolState? SelectedTool { get => _selectedTool; set { _selectedTool = value; OnPropertyChanged(); (ToggleSelectedToolCommand as AsyncActionCommand)?.NotifyCanExecuteChanged(); } }
     public ICommand SendCommand { get; } public ICommand StopCommand { get; } public ICommand RetryCommand { get; } public ICommand NewTemporaryCommand { get; } public ICommand NewTopicCommand { get; }
     public AsyncActionCommand FetchModelsCommand { get; } public ICommand NewProviderCommand { get; } public ICommand SaveProviderCommand { get; } public ICommand TestProviderCommand { get; } public ICommand SetActiveCommand { get; } public ICommand DeleteProviderCommand { get; }
     public ICommand SaveMemoryCommand { get; } public ICommand DeleteMemoryCommand { get; } public ICommand ClearCharacterMemoriesCommand { get; } public ICommand ClearAllMemoriesCommand { get; }
+    public ICommand ApplyToolSettingsCommand { get; } public ICommand ToggleSelectedToolCommand { get; }
     public async Task InitializeAsync()
     {
-        if (!_initialized) { _initialized = true; await RefreshProvidersAsync(); }
+        if (!_initialized) { _initialized = true; await RefreshProvidersAsync(); await RefreshToolsAsync(); }
         await RefreshCharacterSpaceAsync();
     }
     public async Task RefreshCharacterSpaceAsync()
@@ -80,7 +94,7 @@ public sealed class AiViewModel : ObservableViewModel, IDisposable
         try { await foreach (var delta in _chat.SendAsync(SelectedConversation.Id, value, _lifetime.Token)) { partial += delta.Text; if (Messages.LastOrDefault()?.Role == ChatRole.Assistant) Messages.RemoveAt(Messages.Count - 1); Messages.Add(new(ChatRole.Assistant, partial, delta.Status)); } }
         catch (OperationCanceledException) { Notice = _text.Get(TextKey.AiGenerationStopped); }
         catch (Exception exception) { Notice = exception.Message; }
-        finally { Busy = false; await LoadMessagesAsync(); }
+        finally { Busy = false; await LoadMessagesAsync(); await RefreshToolsAsync(); }
     }
     private async Task CreateConversationAsync(ConversationType type)
     { var character = CurrentCharacter(); await _chat.StopAsync(_lifetime.Token); var item = await _chat.CreateAsync(character, type, type.ToString(), _lifetime.Token); await RefreshConversationsAsync(character); SelectedConversation = Conversations.First(x => x.Id == item.Id); }
@@ -108,6 +122,25 @@ public sealed class AiViewModel : ObservableViewModel, IDisposable
     private async Task ClearCharacterMemoriesAsync() { var id = CurrentCharacter(); await _memories.ClearCharacterAsync(id, _lifetime.Token); Memories.Clear(); }
     private async Task ClearAllMemoriesAsync() { await _memories.ClearAllAsync(_lifetime.Token); Memories.Clear(); }
     private async Task SetAutoMemoryAsync(bool value) { if (!_initialized || _pets.Runtime.Current is null) return; try { await _memories.SetAutoEnabledAsync(CurrentCharacter(), value, _lifetime.Token); } catch (Exception e) { Notice = e.Message; } }
+    private async Task RefreshToolsAsync()
+    {
+        _toolsEnabled = _tools.ToolsEnabled; _mediumConfirmation = _tools.MediumConfirmationPreference;
+        OnPropertyChanged(nameof(ToolsEnabled)); OnPropertyChanged(nameof(MediumConfirmation));
+        Replace(ToolStates, _tools.GetToolStates()); Replace(ToolAudit, await _tools.GetRecentAuditAsync(30, _lifetime.Token));
+        SelectedTool = ToolStates.FirstOrDefault(item => item.Definition.ToolId == SelectedTool?.Definition.ToolId) ?? ToolStates.FirstOrDefault();
+    }
+    private async Task ApplyToolSettingsAsync()
+    {
+        await _tools.SetToolsEnabledAsync(ToolsEnabled, _lifetime.Token);
+        await _tools.SetMediumConfirmationPreferenceAsync(MediumConfirmation, _lifetime.Token);
+        await RefreshToolsAsync();
+    }
+    private async Task ToggleSelectedToolAsync()
+    {
+        if (SelectedTool is null) return;
+        await _tools.SetToolEnabledAsync(SelectedTool.Definition.ToolId, !SelectedTool.Enabled, _lifetime.Token);
+        await RefreshToolsAsync();
+    }
     private CharacterId CurrentCharacter() => _pets.Runtime.Current?.Definition.Id ?? throw new InvalidOperationException("No active character.");
     private void LoadProviderEditor() { if (SelectedProvider is null) return; _loadingProvider = true; try { ProviderType = SelectedProvider.ProviderType; ProviderName = SelectedProvider.DisplayName; BaseUrl = SelectedProvider.BaseUrl?.ToString() ?? AiProviderDefaults.SuggestedBaseUrl(ProviderType); Model = SelectedProvider.Model; Replace(AvailableModels, string.IsNullOrWhiteSpace(Model) ? [] : [Model]); TimeoutSeconds = (int)SelectedProvider.Timeout.TotalSeconds; ApiKey = ""; } finally { _loadingProvider = false; } }
     private void ClearProviderEditor() { SelectedProvider = null; AvailableModels.Clear(); ApiKey = ""; TimeoutSeconds = 30; ApplyProviderDefaults(); }

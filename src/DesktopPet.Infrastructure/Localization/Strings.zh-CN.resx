@@ -220,4 +220,13 @@
   <data name="AiAutoMemory" xml:space="preserve"><value>自动记忆</value></data><data name="AiMemoryContent" xml:space="preserve"><value>内容</value></data><data name="AiCategory" xml:space="preserve"><value>分类</value></data><data name="AiImportance" xml:space="preserve"><value>重要性</value></data><data name="AiTags" xml:space="preserve"><value>标签</value></data><data name="AiKeywords" xml:space="preserve"><value>关键词</value></data><data name="AiSaveMemory" xml:space="preserve"><value>保存记忆</value></data><data name="AiDeleteMemory" xml:space="preserve"><value>删除</value></data><data name="AiClearCharacter" xml:space="preserve"><value>清空当前角色</value></data><data name="AiClearAll" xml:space="preserve"><value>清空全部</value></data>
   <data name="AiNewProvider" xml:space="preserve"><value>新建</value></data>
   <data name="AiFetchModels" xml:space="preserve"><value>获取模型</value></data><data name="AiModelsLoaded" xml:space="preserve"><value>模型已加载</value></data><data name="AiModelsFailed" xml:space="preserve"><value>模型加载失败</value></data>
+  <data name="AiTools" xml:space="preserve"><value>AI 工具</value></data>
+  <data name="AiToolsEnabled" xml:space="preserve"><value>允许 AI 使用工具</value></data>
+  <data name="AiMediumConfirmation" xml:space="preserve"><value>中风险操作确认策略</value></data>
+  <data name="AiSaveToolSettings" xml:space="preserve"><value>保存工具设置</value></data>
+  <data name="AiAvailableTools" xml:space="preserve"><value>可用工具</value></data>
+  <data name="AiToggleSelectedTool" xml:space="preserve"><value>启用 / 禁用所选工具</value></data>
+  <data name="AiRecentToolAudit" xml:space="preserve"><value>最近执行记录（已脱敏）</value></data>
+  <data name="AiToolConfirmTitle" xml:space="preserve"><value>AI 工具确认</value></data>
+  <data name="AiToolConfirmMessage" xml:space="preserve"><value>AI 请求执行：{0}&#xA;&#xA;{1}&#xA;&#xA;风险：{2}&#xA;参数摘要：{3}&#xA;&#xA;是否允许此操作？</value></data>
 </root>

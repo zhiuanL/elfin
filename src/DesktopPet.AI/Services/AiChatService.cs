@@ -10,8 +10,10 @@ namespace DesktopPet.AI.Services;
 
 public sealed class AiChatService(IConversationRepository conversations, IAiProviderProfileRepository profiles,
     IEnumerable<IChatModelProvider> providers, IAiContextBuilder context, IMemoryService memories,
-    IResponseInterpreter interpreter, TimeProvider clock) : IAiChatService, IDisposable
+    IResponseInterpreter interpreter, TimeProvider clock, IAiToolRegistry? tools = null) : IAiChatService, IDisposable
 {
+    private const int MaximumToolRounds = 4;
+    private const int MaximumToolCalls = 8;
     private readonly SemaphoreSlim _lifecycle = new(1, 1);
     private CancellationTokenSource? _generation;
     public Task<Conversation> GetMainAsync(CharacterId id, CancellationToken ct) => conversations.GetOrCreateMainAsync(id, ct);
@@ -45,26 +47,72 @@ public sealed class AiChatService(IConversationRepository conversations, IAiProv
         var buffer = new StringBuilder();
         var status = MessageStatus.Interrupted;
         Exception? failure = null;
-        var enumerator = provider.StreamAsync(new(conversation.Id, conversation.CharacterId,
-            AiProviderService.Connection(profile, secret), messages), generation.Token).GetAsyncEnumerator(generation.Token);
+        var providerMessages = messages.ToList();
         try
         {
+            var toolRound = 0;
+            var toolCallCount = 0;
+            var allowTools = true;
             while (true)
             {
-                bool moved;
-                try { moved = await enumerator.MoveNextAsync(); }
-                catch (Exception exception) { failure = exception; break; }
-                if (!moved) { status = MessageStatus.Complete; break; }
-                var delta = enumerator.Current;
-                if (delta.Text.Length > 0) buffer.Append(delta.Text);
-                if (delta.IsComplete) status = MessageStatus.Complete;
-                yield return new(delta.Text, delta.IsComplete, status);
-                if (delta.IsComplete) break;
+                IReadOnlyList<ModelToolCall> requestedCalls = [];
+                var completed = false;
+                var definitions = allowTools && tools is not null ? tools.GetAvailableTools() : [];
+                var enumerator = provider.StreamAsync(new(conversation.Id, conversation.CharacterId,
+                    AiProviderService.Connection(profile, secret), providerMessages, definitions), generation.Token)
+                    .GetAsyncEnumerator(generation.Token);
+                try
+                {
+                    while (true)
+                    {
+                        bool moved;
+                        try { moved = await enumerator.MoveNextAsync(); }
+                        catch (Exception exception) { failure = exception; break; }
+                        if (!moved) break;
+                        var delta = enumerator.Current;
+                        if (delta.Text.Length > 0) { buffer.Append(delta.Text); yield return new(delta.Text, false, MessageStatus.Interrupted); }
+                        if (delta.ToolCalls is { Count: > 0 }) requestedCalls = delta.ToolCalls;
+                        if (delta.IsComplete) { completed = true; break; }
+                    }
+                }
+                finally { await enumerator.DisposeAsync(); }
+                if (failure is not null) break;
+                if (!completed) { status = MessageStatus.Complete; break; }
+                if (requestedCalls.Count == 0)
+                {
+                    status = MessageStatus.Complete;
+                    yield return new(string.Empty, true, status);
+                    break;
+                }
+                if (!allowTools)
+                {
+                    const string limitMessage = "I could not complete the request because the tool-call safety limit was reached.";
+                    buffer.Append(limitMessage); status = MessageStatus.Complete;
+                    yield return new(limitMessage, true, status);
+                    break;
+                }
+
+                providerMessages.Add(new(ChatRole.Assistant, string.Empty, ToolCalls: requestedCalls));
+                foreach (var call in requestedCalls)
+                {
+                    AiToolResult result;
+                    if (!allowTools || toolRound >= MaximumToolRounds || toolCallCount >= MaximumToolCalls)
+                        result = new(ToolExecutionStatus.Denied, "tool_call_limit_reached");
+                    else
+                    {
+                        toolCallCount++;
+                        result = tools is null
+                            ? new(ToolExecutionStatus.Denied, "tools_unavailable")
+                            : await tools.ExecuteAsync(new(call.ToolCallId, call.ToolId, conversation.Id, call.ArgumentsJson), generation.Token);
+                    }
+                    providerMessages.Add(new(ChatRole.Tool, result.ToModelJson(), call.ToolCallId));
+                }
+                toolRound++;
+                if (toolRound >= MaximumToolRounds || toolCallCount >= MaximumToolCalls) allowTools = false;
             }
         }
         finally
         {
-            try { await enumerator.DisposeAsync(); } catch when (failure is not null) { }
             if (failure is not null && failure is not OperationCanceledException) status = MessageStatus.Failed;
             var raw = buffer.ToString();
             var interpreted = interpreter.Interpret(raw);

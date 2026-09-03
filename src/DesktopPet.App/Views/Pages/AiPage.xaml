@@ -23,6 +23,27 @@
         <TextBlock Text="{Binding MemoryContentText}"/><TextBox Text="{Binding MemoryContent,UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="60"/><TextBlock Text="{Binding CategoryText}"/><ComboBox ItemsSource="{Binding MemoryCategories}" SelectedItem="{Binding MemoryCategory}"/>
         <TextBlock Text="{Binding ImportanceText}"/><Slider Minimum="1" Maximum="5" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding MemoryImportance}"/><TextBlock Text="{Binding TagsText}"/><TextBox Text="{Binding MemoryTags}"/><TextBlock Text="{Binding KeywordsText}"/><TextBox Text="{Binding MemoryKeywords}"/>
         <WrapPanel><Button Content="{Binding SaveMemoryText}" Command="{Binding SaveMemoryCommand}"/><Button Content="{Binding DeleteMemoryText}" Command="{Binding DeleteMemoryCommand}"/><Button Content="{Binding ClearCharacterText}" Command="{Binding ClearCharacterMemoriesCommand}"/><Button Content="{Binding ClearAllText}" Command="{Binding ClearAllMemoriesCommand}"/></WrapPanel>
+      </StackPanel></ScrollViewer></TabItem>
+      <TabItem Header="{Binding ToolsText}"><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="8">
+        <CheckBox Content="{Binding ToolsEnabledText}" IsChecked="{Binding ToolsEnabled}"/>
+        <TextBlock Text="{Binding MediumConfirmationText}" Margin="0,8,0,0"/>
+        <ComboBox ItemsSource="{Binding MediumConfirmationPreferences}" SelectedItem="{Binding MediumConfirmation}"/>
+        <Button Content="{Binding SaveToolSettingsText}" Command="{Binding ApplyToolSettingsCommand}" Margin="0,8,0,8"/>
+        <TextBlock Text="{Binding AvailableToolsText}" FontWeight="SemiBold"/>
+        <ListBox ItemsSource="{Binding ToolStates}" SelectedItem="{Binding SelectedTool}" Height="180">
+          <ListBox.ItemTemplate><DataTemplate><StackPanel Margin="2">
+            <TextBlock Text="{Binding Definition.ToolId}" FontWeight="SemiBold"/>
+            <TextBlock Text="{Binding Definition.Description}" TextWrapping="Wrap"/>
+            <TextBlock><Run Text="Risk: "/><Run Text="{Binding Definition.RiskLevel}"/><Run Text=" · Enabled: "/><Run Text="{Binding Enabled}"/></TextBlock>
+          </StackPanel></DataTemplate></ListBox.ItemTemplate>
+        </ListBox>
+        <Button Content="{Binding ToggleSelectedToolText}" Command="{Binding ToggleSelectedToolCommand}" Margin="0,6,0,12"/>
+        <TextBlock Text="{Binding RecentToolAuditText}" FontWeight="SemiBold"/>
+        <ListBox ItemsSource="{Binding ToolAudit}" Height="190"><ListBox.ItemTemplate><DataTemplate>
+          <StackPanel Margin="2"><TextBlock><Run Text="{Binding ToolId}"/><Run Text=" · "/><Run Text="{Binding ExecutionStatus}"/></TextBlock>
+            <TextBlock Text="{Binding ParameterSummary}" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryTextBrush}"/>
+          </StackPanel>
+        </DataTemplate></ListBox.ItemTemplate></ListBox>
       </StackPanel></ScrollViewer></TabItem></TabControl>
     </Grid>
   </Grid>

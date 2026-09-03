@@ -59,12 +59,17 @@ public static class DependencyInjection
         foreach (var id in new[] { CommandId.ShowPet, CommandId.HidePet, CommandId.TogglePetVisibility,
             CommandId.OpenControlCenter, CommandId.CloseControlCenter, CommandId.Exit,
             CommandId.EnableTopmost, CommandId.DisableTopmost })
-            services.AddSingleton<IAppCommand>(provider => new WindowCommand(id, provider.GetRequiredService<IWindowService>()));
+            services.AddSingleton<IAppCommand>(provider => new WindowCommand(id, () => provider.GetRequiredService<IWindowService>()));
         services.AddSingleton<IAppCommand, PomodoroToggleCommand>();
         services.AddSingleton<IAppCommand>(provider => new ProductivityNavigationCommand(CommandId.OpenPomodoro, AppPage.Pomodoro,
-            provider.GetRequiredService<INavigationService>(), provider.GetRequiredService<IWindowService>()));
+            provider.GetRequiredService<INavigationService>(), () => provider.GetRequiredService<IWindowService>()));
         services.AddSingleton<IAppCommand>(provider => new ProductivityNavigationCommand(CommandId.OpenReminders, AppPage.Reminders,
-            provider.GetRequiredService<INavigationService>(), provider.GetRequiredService<IWindowService>()));
+            provider.GetRequiredService<INavigationService>(), () => provider.GetRequiredService<IWindowService>()));
+        foreach (var item in new[] { (CommandId.OpenHome, AppPage.Home), (CommandId.OpenAi, AppPage.AI),
+            (CommandId.OpenStatistics, AppPage.Statistics), (CommandId.OpenCharacters, AppPage.Characters),
+            (CommandId.OpenSettings, AppPage.Settings) })
+            services.AddSingleton<IAppCommand>(provider => new ProductivityNavigationCommand(item.Item1, item.Item2,
+                provider.GetRequiredService<INavigationService>(), () => provider.GetRequiredService<IWindowService>()));
         return services;
     }
 }

@@ -35,6 +35,7 @@ public static class DependencyInjection
         services.AddSingleton<IAiProviderProfileRepository, SqliteAiProviderProfileRepository>();
         services.AddSingleton<IConversationRepository, SqliteConversationRepository>();
         services.AddSingleton<IMemoryRepository, SqliteMemoryRepository>();
+        services.AddSingleton<IAiToolAuditRepository, SqliteAiToolAuditRepository>();
         services.AddSingleton<ICharacterPersonaSource, CharacterPersonaSource>();
         services.AddSingleton<IPomodoroRepository, SqlitePomodoroRepository>();
         services.AddSingleton<ITaskRepository, SqliteTaskRepository>();

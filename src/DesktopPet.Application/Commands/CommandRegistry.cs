@@ -2,7 +2,7 @@ namespace DesktopPet.Application.Commands;
 
 public enum CommandId { OpenControlCenter, TogglePetVisibility, OpenAi, TogglePomodoro, TemporaryClickThrough, ToggleSilentMode, Exit,
     ShowPet, HidePet, CloseControlCenter, SetInteractive, SetClickThrough, ToggleClickThrough, EnableTopmost, DisableTopmost,
-    StartOrPausePomodoro, OpenPomodoro, OpenReminders }
+    StartOrPausePomodoro, OpenHome, OpenPomodoro, OpenReminders, OpenStatistics, OpenCharacters, OpenSettings }
 public enum CommandStatus { Completed, Unavailable, Cancelled }
 public sealed record CommandResult(CommandStatus Status);
 public interface IAppCommand

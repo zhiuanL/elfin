@@ -220,4 +220,13 @@
   <data name="AiAutoMemory" xml:space="preserve"><value>Automatic memory</value></data><data name="AiMemoryContent" xml:space="preserve"><value>Content</value></data><data name="AiCategory" xml:space="preserve"><value>Category</value></data><data name="AiImportance" xml:space="preserve"><value>Importance</value></data><data name="AiTags" xml:space="preserve"><value>Tags</value></data><data name="AiKeywords" xml:space="preserve"><value>Keywords</value></data><data name="AiSaveMemory" xml:space="preserve"><value>Save memory</value></data><data name="AiDeleteMemory" xml:space="preserve"><value>Delete</value></data><data name="AiClearCharacter" xml:space="preserve"><value>Clear character</value></data><data name="AiClearAll" xml:space="preserve"><value>Clear all</value></data>
   <data name="AiNewProvider" xml:space="preserve"><value>New</value></data>
   <data name="AiFetchModels" xml:space="preserve"><value>Fetch models</value></data><data name="AiModelsLoaded" xml:space="preserve"><value>Models loaded</value></data><data name="AiModelsFailed" xml:space="preserve"><value>Could not load models</value></data>
+  <data name="AiTools" xml:space="preserve"><value>AI tools</value></data>
+  <data name="AiToolsEnabled" xml:space="preserve"><value>Allow AI to use tools</value></data>
+  <data name="AiMediumConfirmation" xml:space="preserve"><value>Medium-risk confirmation policy</value></data>
+  <data name="AiSaveToolSettings" xml:space="preserve"><value>Save tool settings</value></data>
+  <data name="AiAvailableTools" xml:space="preserve"><value>Available tools</value></data>
+  <data name="AiToggleSelectedTool" xml:space="preserve"><value>Enable / disable selected tool</value></data>
+  <data name="AiRecentToolAudit" xml:space="preserve"><value>Recent executions (redacted)</value></data>
+  <data name="AiToolConfirmTitle" xml:space="preserve"><value>AI tool confirmation</value></data>
+  <data name="AiToolConfirmMessage" xml:space="preserve"><value>AI requests: {0}&#xA;&#xA;{1}&#xA;&#xA;Risk: {2}&#xA;Parameters: {3}&#xA;&#xA;Allow this operation?</value></data>
 </root>

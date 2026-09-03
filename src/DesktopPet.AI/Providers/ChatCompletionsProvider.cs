@@ -63,16 +63,12 @@ public sealed class ChatCompletionsProvider(AiProviderType providerType, HttpCli
         [EnumeratorCancellation] CancellationToken ct)
     {
         Validate(request.Connection);
-        var payload = JsonSerializer.SerializeToUtf8Bytes(new
-        {
-            model = request.Connection.Model,
-            messages = request.Messages.Select(x => new { role = x.Role.ToString().ToLowerInvariant(), content = x.Content }).ToArray(),
-            stream = true
-        });
+        var payload = CreateChatPayload(request);
         using var response = await SendWithRetryAsync(request.Connection, HttpMethod.Post, ChatEndpoint(request.Connection), payload,
             HttpCompletionOption.ResponseHeadersRead, ct);
         await using var stream = await response.Content.ReadAsStreamAsync(ct);
         using var reader = new StreamReader(stream, Encoding.UTF8);
+        var toolCalls = new SortedDictionary<int, ToolCallAccumulator>();
         while (true)
         {
             ct.ThrowIfCancellationRequested();
@@ -80,15 +76,84 @@ public sealed class ChatCompletionsProvider(AiProviderType providerType, HttpCli
             if (line is null) break;
             if (string.IsNullOrWhiteSpace(line) || !line.StartsWith("data:", StringComparison.OrdinalIgnoreCase)) continue;
             var data = line[5..].Trim();
-            if (data == "[DONE]") { yield return new(string.Empty, true); yield break; }
+            if (data == "[DONE]") { yield return new(string.Empty, true, BuildToolCalls(toolCalls, request.Tools)); yield break; }
             using var json = JsonDocument.Parse(data);
             if (json.RootElement.TryGetProperty("choices", out var choices) && choices.GetArrayLength() > 0 &&
-                choices[0].TryGetProperty("delta", out var delta) && delta.TryGetProperty("content", out var content) &&
-                content.ValueKind == JsonValueKind.String)
-                yield return new(content.GetString() ?? string.Empty);
+                choices[0].TryGetProperty("delta", out var delta))
+            {
+                AccumulateToolCalls(delta, toolCalls);
+                if (delta.TryGetProperty("content", out var content) && content.ValueKind == JsonValueKind.String)
+                    yield return new(content.GetString() ?? string.Empty);
+            }
         }
-        yield return new(string.Empty, true);
+        yield return new(string.Empty, true, BuildToolCalls(toolCalls, request.Tools));
     }
+
+    internal static byte[] CreateChatPayload(ChatRequest request)
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
+        {
+            writer.WriteStartObject(); writer.WriteString("model", request.Connection.Model);
+            writer.WritePropertyName("messages"); writer.WriteStartArray();
+            foreach (var message in request.Messages)
+            {
+                writer.WriteStartObject(); writer.WriteString("role", message.Role.ToString().ToLowerInvariant());
+                if (message.Role == ChatRole.Tool) writer.WriteString("tool_call_id", message.ToolCallId);
+                if (message.ToolCalls is { Count: > 0 })
+                {
+                    writer.WriteNull("content"); writer.WritePropertyName("tool_calls"); writer.WriteStartArray();
+                    foreach (var call in message.ToolCalls)
+                    {
+                        writer.WriteStartObject(); writer.WriteString("id", call.ToolCallId); writer.WriteString("type", "function");
+                        writer.WritePropertyName("function"); writer.WriteStartObject();
+                        writer.WriteString("name", AiToolProtocolName.Encode(call.ToolId)); writer.WriteString("arguments", call.ArgumentsJson);
+                        writer.WriteEndObject(); writer.WriteEndObject();
+                    }
+                    writer.WriteEndArray();
+                }
+                else writer.WriteString("content", message.Content);
+                writer.WriteEndObject();
+            }
+            writer.WriteEndArray();
+            if (request.Tools is { Count: > 0 })
+            {
+                writer.WritePropertyName("tools"); writer.WriteStartArray();
+                foreach (var tool in request.Tools)
+                {
+                    writer.WriteStartObject(); writer.WriteString("type", "function"); writer.WritePropertyName("function"); writer.WriteStartObject();
+                    writer.WriteString("name", AiToolProtocolName.Encode(tool.ToolId)); writer.WriteString("description", tool.Description);
+                    writer.WritePropertyName("parameters"); using var schema = JsonDocument.Parse(tool.InputJsonSchema); schema.RootElement.WriteTo(writer);
+                    writer.WriteEndObject(); writer.WriteEndObject();
+                }
+                writer.WriteEndArray(); writer.WriteString("tool_choice", "auto");
+            }
+            writer.WriteBoolean("stream", true); writer.WriteEndObject();
+        }
+        return stream.ToArray();
+    }
+    private static void AccumulateToolCalls(JsonElement delta, IDictionary<int, ToolCallAccumulator> target)
+    {
+        if (!delta.TryGetProperty("tool_calls", out var calls) || calls.ValueKind != JsonValueKind.Array) return;
+        foreach (var node in calls.EnumerateArray())
+        {
+            if (!node.TryGetProperty("index", out var indexNode) || !indexNode.TryGetInt32(out var index)) continue;
+            if (!target.TryGetValue(index, out var item)) target[index] = item = new();
+            if (node.TryGetProperty("id", out var id) && id.ValueKind == JsonValueKind.String) item.Id.Append(id.GetString());
+            if (!node.TryGetProperty("function", out var function)) continue;
+            if (function.TryGetProperty("name", out var name) && name.ValueKind == JsonValueKind.String) item.Name.Append(name.GetString());
+            if (function.TryGetProperty("arguments", out var arguments) && arguments.ValueKind == JsonValueKind.String) item.Arguments.Append(arguments.GetString());
+        }
+    }
+    private static IReadOnlyList<ModelToolCall> BuildToolCalls(IEnumerable<KeyValuePair<int, ToolCallAccumulator>> source,
+        IReadOnlyList<AiToolDefinition>? definitions)
+    {
+        var byProtocolName = (definitions ?? []).ToDictionary(item => AiToolProtocolName.Encode(item.ToolId), item => item.ToolId, StringComparer.Ordinal);
+        return source.Select(item => item.Value).Where(item => item.Id.Length > 0 && item.Name.Length > 0)
+            .Select(item => new ModelToolCall(item.Id.ToString(), byProtocolName.TryGetValue(item.Name.ToString(), out var id) ? id : item.Name.ToString(),
+                item.Arguments.Length == 0 ? "{}" : item.Arguments.ToString())).ToArray();
+    }
+    private sealed class ToolCallAccumulator { public StringBuilder Id { get; } = new(); public StringBuilder Name { get; } = new(); public StringBuilder Arguments { get; } = new(); }
 
     private async Task<HttpResponseMessage> SendWithRetryAsync(AiConnectionSettings settings, HttpMethod method,
         Uri endpoint, byte[]? body, HttpCompletionOption completion, CancellationToken ct)

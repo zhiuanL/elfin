@@ -166,3 +166,49 @@ public sealed class SqliteMemoryRepository(ISqliteConnectionFactory connections,
     public async Task SetAutoEnabledAsync(CharacterId characterId, bool enabled, CancellationToken ct)
     { await using var db = await connections.OpenAsync(DatabaseKind.Ai, ct); using var command = db.CreateCommand(); command.CommandText = "INSERT INTO AiCharacterPreferences(CharacterId,AutoMemoryEnabled) VALUES($character,$enabled) ON CONFLICT(CharacterId) DO UPDATE SET AutoMemoryEnabled=excluded.AutoMemoryEnabled;"; command.Parameters.AddWithValue("$character", characterId.Value); command.Parameters.AddWithValue("$enabled", enabled); await command.ExecuteNonQueryAsync(ct); }
 }
+
+public sealed class SqliteAiToolAuditRepository(ISqliteConnectionFactory connections) : IAiToolAuditRepository
+{
+    public async Task SaveAsync(AiToolAuditEntry entry, CancellationToken ct)
+    {
+        await using var db = await connections.OpenAsync(DatabaseKind.Ai, ct);
+        using var command = db.CreateCommand();
+        command.CommandText = """
+            INSERT OR IGNORE INTO AiToolAudit(Id,TimestampUtc,ConversationId,ToolCallId,ToolId,RiskLevel,
+              ParameterSummary,ConfirmationResult,ExecutionStatus,DurationMilliseconds,ErrorCategory)
+            VALUES($id,$timestamp,$conversation,$call,$tool,$risk,$summary,$confirmation,$status,$duration,$error);
+            """;
+        command.Parameters.AddWithValue("$id", entry.Id.ToString("D"));
+        command.Parameters.AddWithValue("$timestamp", AiSql.Utc(entry.TimestampUtc));
+        command.Parameters.AddWithValue("$conversation", entry.ConversationId.ToString("D"));
+        command.Parameters.AddWithValue("$call", entry.ToolCallId);
+        command.Parameters.AddWithValue("$tool", entry.ToolId);
+        command.Parameters.AddWithValue("$risk", (int)entry.RiskLevel);
+        command.Parameters.AddWithValue("$summary", entry.ParameterSummary);
+        command.Parameters.AddWithValue("$confirmation", (int)entry.ConfirmationResult);
+        command.Parameters.AddWithValue("$status", (int)entry.ExecutionStatus);
+        command.Parameters.AddWithValue("$duration", entry.DurationMilliseconds);
+        command.Parameters.AddWithValue("$error", (object?)entry.ErrorCategory ?? DBNull.Value);
+        await command.ExecuteNonQueryAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<AiToolAuditEntry>> ListRecentAsync(int limit, CancellationToken ct)
+    {
+        await using var db = await connections.OpenAsync(DatabaseKind.Ai, ct);
+        using var command = db.CreateCommand();
+        command.CommandText = """
+            SELECT Id,TimestampUtc,ConversationId,ToolCallId,ToolId,RiskLevel,ParameterSummary,
+              ConfirmationResult,ExecutionStatus,DurationMilliseconds,ErrorCategory
+            FROM AiToolAudit ORDER BY TimestampUtc DESC, Id DESC LIMIT $limit;
+            """;
+        command.Parameters.AddWithValue("$limit", limit);
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        var result = new List<AiToolAuditEntry>();
+        while (await reader.ReadAsync(ct))
+            result.Add(new(AiSql.Guid(reader, 0), AiSql.Utc(reader, 1), AiSql.Guid(reader, 2), reader.GetString(3),
+                reader.GetString(4), (ToolRiskLevel)reader.GetInt32(5), reader.GetString(6),
+                (ToolConfirmationResult)reader.GetInt32(7), (ToolExecutionStatus)reader.GetInt32(8),
+                reader.GetInt64(9), reader.IsDBNull(10) ? null : reader.GetString(10)));
+        return result;
+    }
+}

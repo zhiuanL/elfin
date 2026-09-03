@@ -6,7 +6,7 @@ namespace DesktopPet.AI.Contracts;
 public enum AiProviderType { OpenAI, DeepSeek, AzureOpenAI, OpenAICompatible }
 public enum CredentialPersistence { Saved, SessionOnly }
 public enum ConnectionStatus { Success, Unauthorized, RateLimited, Timeout, NetworkError, InvalidConfiguration, ProviderError, Cancelled }
-public enum ChatRole { System, User, Assistant }
+public enum ChatRole { System, User, Assistant, Tool }
 public enum ConversationType { Main, Temporary, Topic }
 public enum MessageStatus { Complete, Interrupted, Failed }
 public enum MemoryCategory { Preference, Fact, Relationship, Work, General }
@@ -20,10 +20,12 @@ public sealed record TestConnectionResult(ConnectionStatus Status, string? Error
 { public bool Succeeded => Status == ConnectionStatus.Success; }
 public sealed record ModelDiscoveryResult(ConnectionStatus Status, IReadOnlyList<string> Models, string? ErrorCode = null)
 { public bool Succeeded => Status == ConnectionStatus.Success; }
-public sealed record ChatMessage(ChatRole Role, string Content);
+public sealed record ModelToolCall(string ToolCallId, string ToolId, string ArgumentsJson);
+public sealed record ChatMessage(ChatRole Role, string Content, string? ToolCallId = null,
+    IReadOnlyList<ModelToolCall>? ToolCalls = null);
 public sealed record ChatRequest(Guid ConversationId, CharacterId CharacterId, AiConnectionSettings Connection,
-    IReadOnlyList<ChatMessage> Messages);
-public sealed record ChatDelta(string Text, bool IsComplete = false);
+    IReadOnlyList<ChatMessage> Messages, IReadOnlyList<AiToolDefinition>? Tools = null);
+public sealed record ChatDelta(string Text, bool IsComplete = false, IReadOnlyList<ModelToolCall>? ToolCalls = null);
 public interface IChatModelProvider
 {
     AiProviderType ProviderType { get; }

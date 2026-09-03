@@ -110,12 +110,31 @@ public static class InitialMigrations
         );
         """;
 
+    public const string AiToolAuditSql = """
+        CREATE TABLE AiToolAudit (
+            Id TEXT NOT NULL PRIMARY KEY,
+            TimestampUtc TEXT NOT NULL,
+            ConversationId TEXT NOT NULL REFERENCES Conversations(Id) ON DELETE CASCADE,
+            ToolCallId TEXT NOT NULL,
+            ToolId TEXT NOT NULL,
+            RiskLevel INTEGER NOT NULL,
+            ParameterSummary TEXT NOT NULL,
+            ConfirmationResult INTEGER NOT NULL,
+            ExecutionStatus INTEGER NOT NULL,
+            DurationMilliseconds INTEGER NOT NULL,
+            ErrorCategory TEXT NULL
+        );
+        CREATE UNIQUE INDEX UX_AiToolAudit_Call ON AiToolAudit(ConversationId, ToolCallId);
+        CREATE INDEX IX_AiToolAudit_Timestamp ON AiToolAudit(TimestampUtc DESC);
+        """;
+
     public static IReadOnlyList<ISqliteMigration> Create() =>
     [
         new SqliteMigration(DatabaseKind.App, 1, "schema-history", HistorySql),
         new SqliteMigration(DatabaseKind.App, 2, "productivity-core", ProductivitySql),
         new SqliteMigration(DatabaseKind.Ai, 1, "schema-history", HistorySql),
-        new SqliteMigration(DatabaseKind.Ai, 2, "ai-core", AiCoreSql)
+        new SqliteMigration(DatabaseKind.Ai, 2, "ai-core", AiCoreSql),
+        new SqliteMigration(DatabaseKind.Ai, 3, "ai-tool-audit", AiToolAuditSql)
     ];
 }
 public sealed class MigrationHistoryException(string message) : InvalidOperationException(message);

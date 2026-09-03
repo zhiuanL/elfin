@@ -54,9 +54,9 @@ public sealed class PhaseSevenAiPersistenceTests
     public async Task FailedAiUpgradeRollsBackSchemaAndHistory()
     {
         using var env = new TestEnvironment(); await env.Migrator().MigrateAsync(DatabaseKind.Ai, default);
-        var pending = InitialMigrations.Create().Append(new SqliteMigration(DatabaseKind.Ai, 3, "pending", "CREATE TABLE PendingAi(Value TEXT);")).Append(new SqliteMigration(DatabaseKind.Ai, 4, "broken", "INSERT INTO MissingAi VALUES(1);"));
+        var pending = InitialMigrations.Create().Append(new SqliteMigration(DatabaseKind.Ai, 4, "pending", "CREATE TABLE PendingAi(Value TEXT);")).Append(new SqliteMigration(DatabaseKind.Ai, 5, "broken", "INSERT INTO MissingAi VALUES(1);"));
         await Assert.ThrowsAsync<SqliteException>(() => env.Migrator(pending).MigrateAsync(DatabaseKind.Ai, default));
-        await using var db = await env.Connections.OpenAsync(DatabaseKind.Ai, default); Assert.Equal(2L, await Scalar(db, "SELECT MAX(Version) FROM SchemaMigrations;")); Assert.Equal(0L, await Scalar(db, "SELECT COUNT(*) FROM sqlite_master WHERE name='PendingAi';"));
+        await using var db = await env.Connections.OpenAsync(DatabaseKind.Ai, default); Assert.Equal(3L, await Scalar(db, "SELECT MAX(Version) FROM SchemaMigrations;")); Assert.Equal(0L, await Scalar(db, "SELECT COUNT(*) FROM sqlite_master WHERE name='PendingAi';"));
     }
     private static async Task<object?> Scalar(SqliteConnection connection, string sql) { using var command = connection.CreateCommand(); command.CommandText = sql; return await command.ExecuteScalarAsync(); }
 }

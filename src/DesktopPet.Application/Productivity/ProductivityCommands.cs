@@ -29,13 +29,13 @@ public sealed class PomodoroToggleCommand(IPomodoroService pomodoro, ISettingsSe
 }
 
 public sealed class ProductivityNavigationCommand(CommandId id, AppPage page, INavigationService navigation,
-    IWindowService windows) : IAppCommand
+    Func<IWindowService> windows) : IAppCommand
 {
     public CommandId Id { get; } = id;
     public async Task<CommandResult> ExecuteAsync(CancellationToken ct)
     {
         navigation.Navigate(page);
-        await windows.ShowControlCenterAsync(ct);
+        await windows().ShowControlCenterAsync(ct);
         return new(CommandStatus.Completed);
     }
 }
