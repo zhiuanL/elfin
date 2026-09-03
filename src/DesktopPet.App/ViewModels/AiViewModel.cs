@@ -14,24 +14,27 @@ public sealed record AiMessageItem(ChatRole Role, string Content, MessageStatus 
 public sealed class AiViewModel : ObservableViewModel, IDisposable
 {
     private readonly IAiChatService _chat; private readonly IAiProviderService _providers; private readonly IMemoryService _memories;
-    private readonly PetHost _pets; private readonly ITextLocalizer _text; private readonly IAiToolRegistry _tools; private readonly CancellationTokenSource _lifetime = new();
+    private readonly PetHost _pets; private readonly ITextLocalizer _text; private readonly IAiToolRegistry _tools; private readonly ISpeechService _speech; private readonly CancellationTokenSource _lifetime = new();
     private bool _initialized, _busy, _autoMemory, _saveKey = true, _loadingProvider; private string _input = "", _lastInput = "", _notice = "";
-    private Conversation? _conversation; private AiProviderProfile? _profile; private MemoryItem? _memory;
+    private Conversation? _conversation; private AiProviderProfile? _profile; private MemoryItem? _memory; private AiMessageItem? _selectedMessage;
     private string _providerName = "", _baseUrl = "", _model = "", _apiKey = "", _memoryContent = "", _memoryTags = "", _memoryKeywords = "";
     private AiProviderType _providerType; private MemoryCategory _memoryCategory; private int _timeoutSeconds = 30, _memoryImportance = 3;
     private bool _toolsEnabled; private MediumConfirmationPreference _mediumConfirmation; private AiToolState? _selectedTool;
     public AiViewModel(IAiChatService chat, IAiProviderService providers, IMemoryService memories, PetHost pets, ITextLocalizer text,
-        IAiToolRegistry tools)
+        IAiToolRegistry tools, ISpeechService speech)
     {
-        _chat = chat; _providers = providers; _memories = memories; _pets = pets; _text = text; _tools = tools;
+        _chat = chat; _providers = providers; _memories = memories; _pets = pets; _text = text; _tools = tools; _speech = speech;
         SendCommand = Command(SendAsync, () => !Busy && !string.IsNullOrWhiteSpace(Input)); StopCommand = Command(() => _chat.StopAsync(_lifetime.Token), () => Busy);
         RetryCommand = Command(RetryAsync, () => !Busy && !string.IsNullOrWhiteSpace(_lastInput)); NewTemporaryCommand = Command(() => CreateConversationAsync(ConversationType.Temporary)); NewTopicCommand = Command(() => CreateConversationAsync(ConversationType.Topic));
         NewProviderCommand = Command(() => { ClearProviderEditor(); return Task.CompletedTask; }); FetchModelsCommand = Command(FetchModelsAsync, CanFetchModels); SaveProviderCommand = Command(SaveProviderAsync); TestProviderCommand = Command(TestProviderAsync, () => SelectedProvider is not null); SetActiveCommand = Command(SetActiveAsync, () => SelectedProvider is not null); DeleteProviderCommand = Command(DeleteProviderAsync, () => SelectedProvider is not null);
         SaveMemoryCommand = Command(SaveMemoryAsync); DeleteMemoryCommand = Command(DeleteMemoryAsync, () => SelectedMemory is not null); ClearCharacterMemoriesCommand = Command(ClearCharacterMemoriesAsync); ClearAllMemoriesCommand = Command(ClearAllMemoriesAsync);
         ApplyToolSettingsCommand = Command(ApplyToolSettingsAsync);
         ToggleSelectedToolCommand = Command(ToggleSelectedToolAsync, () => SelectedTool?.CanChangeEnabled == true);
+        ReadAloudCommand = Command(ReadAloudAsync, () => SelectedMessage?.Role == ChatRole.Assistant && SelectedMessage.Status == MessageStatus.Complete);
+        StopSpeechCommand = Command(() => _speech.StopAsync(_lifetime.Token), () => _speech.IsSpeaking);
         ApplyProviderDefaults();
         _text.CultureChanged += OnCultureChanged;
+        _speech.StateChanged += OnSpeechStateChanged;
     }
     public ObservableCollection<Conversation> Conversations { get; } = []; public ObservableCollection<AiMessageItem> Messages { get; } = [];
     public ObservableCollection<AiProviderProfile> ProviderProfiles { get; } = []; public ObservableCollection<MemoryItem> Memories { get; } = [];
@@ -67,10 +70,14 @@ public sealed class AiViewModel : ObservableViewModel, IDisposable
     public bool ToolsEnabled { get => _toolsEnabled; set { _toolsEnabled = value; OnPropertyChanged(); } }
     public MediumConfirmationPreference MediumConfirmation { get => _mediumConfirmation; set { _mediumConfirmation = value; OnPropertyChanged(); } }
     public AiToolState? SelectedTool { get => _selectedTool; set { _selectedTool = value; OnPropertyChanged(); (ToggleSelectedToolCommand as AsyncActionCommand)?.NotifyCanExecuteChanged(); } }
+    public AiMessageItem? SelectedMessage { get => _selectedMessage; set { _selectedMessage = value; OnPropertyChanged(); (ReadAloudCommand as AsyncActionCommand)?.NotifyCanExecuteChanged(); } }
     public ICommand SendCommand { get; } public ICommand StopCommand { get; } public ICommand RetryCommand { get; } public ICommand NewTemporaryCommand { get; } public ICommand NewTopicCommand { get; }
     public AsyncActionCommand FetchModelsCommand { get; } public ICommand NewProviderCommand { get; } public ICommand SaveProviderCommand { get; } public ICommand TestProviderCommand { get; } public ICommand SetActiveCommand { get; } public ICommand DeleteProviderCommand { get; }
     public ICommand SaveMemoryCommand { get; } public ICommand DeleteMemoryCommand { get; } public ICommand ClearCharacterMemoriesCommand { get; } public ICommand ClearAllMemoriesCommand { get; }
     public ICommand ApplyToolSettingsCommand { get; } public ICommand ToggleSelectedToolCommand { get; }
+    public ICommand ReadAloudCommand { get; } public ICommand StopSpeechCommand { get; }
+    public string ReadAloudText => _text.Get(TextKey.AiReadAloud);
+    public string StopSpeechText => _text.Get(TextKey.AiStopSpeech);
     public async Task InitializeAsync()
     {
         if (!_initialized) { _initialized = true; await RefreshProvidersAsync(); await RefreshToolsAsync(); }
@@ -86,6 +93,12 @@ public sealed class AiViewModel : ObservableViewModel, IDisposable
     private async Task SwitchConversationAsync()
     { try { await _chat.StopAsync(_lifetime.Token); await LoadMessagesAsync(); } catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { } catch (Exception e) { Notice = e.Message; } }
     private async Task LoadMessagesAsync() { Messages.Clear(); if (SelectedConversation is null) return; foreach (var item in await _chat.MessagesAsync(SelectedConversation.Id, _lifetime.Token)) Messages.Add(new(item.Role, item.Content, item.Status)); }
+    private async Task ReadAloudAsync()
+    {
+        if (SelectedMessage is not { Role: ChatRole.Assistant, Status: MessageStatus.Complete } message) return;
+        var result = await _speech.SpeakAsync(new(_pets.Runtime.InstanceId, message.Content, _text.Culture.Name, SpeechOrigin.Manual), _lifetime.Token);
+        Notice = result.Status.ToString();
+    }
     private async Task SendAsync() { var value = Input.Trim(); Input = ""; _lastInput = value; await SendValueAsync(value); }
     private Task RetryAsync() => SendValueAsync(_lastInput);
     private async Task SendValueAsync(string value)
@@ -150,6 +163,8 @@ public sealed class AiViewModel : ObservableViewModel, IDisposable
     private void NotifyCommands() { foreach (var command in new[] { SendCommand, StopCommand, RetryCommand, TestProviderCommand, SetActiveCommand, DeleteProviderCommand, DeleteMemoryCommand }.OfType<AsyncActionCommand>()) command.NotifyCanExecuteChanged(); }
     private static void Replace<T>(ObservableCollection<T> target, IEnumerable<T> source) { target.Clear(); foreach (var item in source) target.Add(item); }
     private void OnCultureChanged(object? sender, EventArgs e) => OnPropertyChanged(string.Empty);
-    public async Task StopAsync() { _lifetime.Cancel(); await _chat.StopAsync(CancellationToken.None); }
-    public void Dispose() { _text.CultureChanged -= OnCultureChanged; _lifetime.Cancel(); _lifetime.Dispose(); }
+    private void OnSpeechStateChanged(object? sender, EventArgs e) => (StopSpeechCommand as AsyncActionCommand)?.NotifyCanExecuteChanged();
+    public Task StopSpeechAsync() => _speech.StopAsync(CancellationToken.None);
+    public async Task StopAsync() { _lifetime.Cancel(); await _chat.StopAsync(CancellationToken.None); await _speech.StopAsync(CancellationToken.None); }
+    public void Dispose() { _text.CultureChanged -= OnCultureChanged; _speech.StateChanged -= OnSpeechStateChanged; _lifetime.Cancel(); _lifetime.Dispose(); }
 }

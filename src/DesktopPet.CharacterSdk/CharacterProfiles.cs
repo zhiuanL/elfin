@@ -1,6 +1,6 @@
 namespace DesktopPet.CharacterSdk;
 
-// Declarative content only. Phase 2 validates these; no persona/emotion/voice runtime is implemented.
+// Declarative content only. Runtime consumers remain in their owning application modules.
 public sealed record PersonaProfile(string Summary, IReadOnlyList<string> Traits);
 public sealed record DialogueProfile(IReadOnlyDictionary<string, IReadOnlyList<string>> Lines);
 public sealed record EmotionProfile(IReadOnlyDictionary<string, string> Animations);

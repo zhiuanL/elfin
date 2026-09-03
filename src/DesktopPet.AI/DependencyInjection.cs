@@ -20,6 +20,7 @@ public static class DependencyInjection
         foreach (var type in Enum.GetValues<AiProviderType>())
             services.AddSingleton<IChatModelProvider>(provider => new ChatCompletionsProvider(type,
                 provider.GetRequiredService<HttpClient>(), provider.GetRequiredService<IAiCredentialVault>(), provider.GetRequiredService<IAiRetryDelay>()));
+        services.AddSingleton<ITtsProvider, OpenAiTtsProvider>();
         services.AddSingleton<IAiCredentialVault, AiCredentialVault>();
         services.AddSingleton<IAiProviderService, AiProviderService>();
         services.AddSingleton<IMemoryService, MemoryService>();

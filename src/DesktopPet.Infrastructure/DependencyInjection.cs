@@ -29,6 +29,7 @@ public static class DependencyInjection
         services.AddSingleton<ICharacterPackageValidator, CharacterPackageValidator>();
         services.AddSingleton<ICharacterPackageStore, FileCharacterPackageStore>();
         services.AddSingleton<ICharacterBehaviorProfileReader, CharacterBehaviorProfileReader>();
+        services.AddSingleton<ICharacterVoiceProfileReader, CharacterVoiceProfileReader>();
         services.AddSingleton<ITextLocalizer, ResourceTextLocalizer>();
         services.AddSingleton<ISqliteConnectionFactory, SqliteConnectionFactory>();
         services.AddSingleton<ISecretStore, DpapiFileSecretStore>();

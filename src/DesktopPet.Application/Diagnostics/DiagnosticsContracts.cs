@@ -5,7 +5,7 @@ namespace DesktopPet.Application.Diagnostics;
 
 public enum AppEvent { Starting, Started, Stopping, MigrationApplied, SettingsRecovered, Failure,
     BehaviorSelected, StateChanged, CharacterSwitched, SchedulerStarted, SchedulerStopped, EmotionChanged, DecisionFallback,
-    MovementStarted, MovementStopped }
+    MovementStarted, MovementStopped, SpeechStarted, SpeechStopped, SpeechFailed }
 public enum ErrorCode { StartupFailed, DatabaseMigrationFailed, AiStorageUnavailable, UnhandledException, CommandFailed }
 public enum ErrorOrigin { Startup, Dispatcher, AppDomain, BackgroundTask, Command, AiStorage }
 public sealed record AppFailure(ErrorCode Code, ErrorOrigin Origin, Guid CorrelationId, DateTimeOffset TimestampUtc);

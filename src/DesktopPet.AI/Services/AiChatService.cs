@@ -5,12 +5,13 @@ using System.Text.RegularExpressions;
 using DesktopPet.AI.Contracts;
 using DesktopPet.Application.Runtime;
 using DesktopPet.Domain.Pets;
+using DesktopPet.Application.Contracts;
 
 namespace DesktopPet.AI.Services;
 
 public sealed class AiChatService(IConversationRepository conversations, IAiProviderProfileRepository profiles,
     IEnumerable<IChatModelProvider> providers, IAiContextBuilder context, IMemoryService memories,
-    IResponseInterpreter interpreter, TimeProvider clock, IAiToolRegistry? tools = null) : IAiChatService, IDisposable
+    IResponseInterpreter interpreter, TimeProvider clock, IAiToolRegistry? tools = null, ISpeechService? speech = null) : IAiChatService, IDisposable
 {
     private const int MaximumToolRounds = 4;
     private const int MaximumToolCalls = 8;
@@ -123,6 +124,9 @@ public sealed class AiChatService(IConversationRepository conversations, IAiProv
                 await conversations.SaveUsageAsync(new(Guid.NewGuid(), conversation.Id, assistantId,
                     profile.ProviderType.ToString(), profile.Model, null, null, clock.GetUtcNow()), CancellationToken.None);
                 await interpreter.ApplyAsync(interpreted.Hint, CancellationToken.None);
+                if (speech is not null && !string.IsNullOrWhiteSpace(interpreted.DisplayText))
+                    _ = speech.SpeakAsync(new(new PetInstanceId(Guid.Empty), interpreted.DisplayText,
+                        string.Empty, SpeechOrigin.AiAutomatic, interpreted.Hint?.TtsPreference), CancellationToken.None);
                 await memories.TrySaveAutomaticAsync(conversation.CharacterId, text.Trim(), user.Id, CancellationToken.None);
             }
             await _lifecycle.WaitAsync(CancellationToken.None);
@@ -145,6 +149,7 @@ public sealed class ResponseInterpreter(ICharacterPresentation presentation) : I
     private static readonly Regex Marker = new(@"<pet-hint>(?<json>.*?)</pet-hint>\s*$", RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private static readonly Regex Semantic = new(@"^[a-z][a-z0-9-]{0,31}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly HashSet<string> Emotions = new(StringComparer.OrdinalIgnoreCase) { "happy", "calm", "focused", "surprised", "rest" };
+    private static readonly HashSet<string> TtsPreferences = new(StringComparer.OrdinalIgnoreCase) { "speak", "silent", "calm", "cheerful" };
     public InterpretedResponse Interpret(string response)
     {
         var match = Marker.Match(response);
@@ -159,7 +164,7 @@ public sealed class ResponseInterpreter(ICharacterPresentation presentation) : I
             var emotion = Read("emotionHint"); var animation = Read("animationSemantic"); var tts = Read("ttsPreference");
             if (emotion is not null && !Emotions.Contains(emotion)) return new(response[..match.Index].TrimEnd(), null);
             if (animation is not null && !Semantic.IsMatch(animation)) return new(response[..match.Index].TrimEnd(), null);
-            if (tts is not null && (!Semantic.IsMatch(tts) || tts.Length > 32)) return new(response[..match.Index].TrimEnd(), null);
+            if (tts is not null && !TtsPreferences.Contains(tts)) return new(response[..match.Index].TrimEnd(), null);
             return new(response[..match.Index].TrimEnd(), new(emotion, animation, tts));
         }
         catch (JsonException) { return new(response[..match.Index].TrimEnd(), null); }

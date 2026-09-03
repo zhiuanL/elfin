@@ -47,6 +47,7 @@ public sealed class DesktopApplication(IRecoveryCoordinator recovery, MainWindow
         await pets.Runtime.ReconcileMovementAsync(false, ct);
         movementTools.Initialize();
         settings.Initialize();
+        await settings.Voice.InitializeAsync();
         hotkeys.Initialize();
         await characterManager.InitializeAsync();
         await pomodoroPage.InitializeAsync();

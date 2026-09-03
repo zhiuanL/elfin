@@ -10,7 +10,7 @@ using DesktopPet.Application.Movement;
 namespace DesktopPet.Application.Runtime;
 
 // Instance-scoped mutable state; PetHost owns one instance in V1.
-public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, IDisposable
+public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, ISpeechVisualController, IDisposable
 {
     private readonly CharacterPresentationService _presentation;
     private readonly ISettingsService _settings;
@@ -26,6 +26,7 @@ public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, IDisposabl
     private Task _loop = Task.CompletedTask;
     private bool _started, _stopped, _disposed;
     private bool _sessionSuspended;
+    private SpeechVisualMode _speechVisualMode;
     private RuntimeDiagnostic _diagnostic;
     public PetRuntime(CharacterPresentationService presentation, ISettingsService settings, ICharacterBehaviorProfileReader profiles,
         TimeProvider clock, RuntimePolicy policy, IRandomSource random, IExceptionHandler exceptions, IAppLogger logger,
@@ -46,6 +47,10 @@ public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, IDisposabl
     public MovementDiagnostic? Movement => _movement?.Diagnostic;
     public PetSnapshot Snapshot => new(InstanceId, Current?.Definition.Id ?? new(string.Empty), _diagnostic.State.Primary, _diagnostic.Emotion);
     public event EventHandler? Changed;
+    public event EventHandler? SpeechInterruptionRequested;
+    public bool IsSpeechEnvironmentAvailable => _started && !_stopped && !_sessionSuspended &&
+        _scheduler.IsVisible && !_scheduler.IsInteracting;
+    public bool IsFocusActive => _scheduler.FocusMode;
     private void OnChanged(object? sender, EventArgs e) { _diagnostic = _scheduler.Diagnostic; Changed?.Invoke(this, EventArgs.Empty); }
     public async Task StartAsync(CancellationToken ct)
     {
@@ -111,6 +116,7 @@ public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, IDisposabl
     }
     public async Task<CharacterOperationResult> ActivateAsync(CharacterId id, CancellationToken ct)
     {
+        SpeechInterruptionRequested?.Invoke(this, EventArgs.Empty);
         await _operations.WaitAsync(ct);
         try
         {
@@ -129,6 +135,7 @@ public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, IDisposabl
     }
     public async Task SetVisibleAsync(bool visible, CancellationToken ct)
     {
+        if (!visible) SpeechInterruptionRequested?.Invoke(this, EventArgs.Empty);
         await _operations.WaitAsync(ct);
         try
         {
@@ -146,6 +153,7 @@ public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, IDisposabl
     public async Task InteractAsync(PetInteractionKind kind, CancellationToken ct)
     {
         if (!Enum.IsDefined(kind)) throw new ArgumentOutOfRangeException(nameof(kind));
+        if (kind == PetInteractionKind.PointerPressed) SpeechInterruptionRequested?.Invoke(this, EventArgs.Empty);
         await _operations.WaitAsync(ct);
         try
         {
@@ -196,6 +204,7 @@ public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, IDisposabl
     }
     public async Task SetSessionSuspendedAsync(bool suspended, CancellationToken ct)
     {
+        if (suspended) SpeechInterruptionRequested?.Invoke(this, EventArgs.Empty);
         await _operations.WaitAsync(ct);
         try
         {
@@ -244,6 +253,7 @@ public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, IDisposabl
     public async Task StopAsync(CancellationToken ct)
     {
         if (_disposed) return;
+        SpeechInterruptionRequested?.Invoke(this, EventArgs.Empty);
         await _operations.WaitAsync(CancellationToken.None);
         try
         {
@@ -260,6 +270,64 @@ public sealed class PetRuntime : IPetRuntime, ICharacterPresentation, IDisposabl
             }
         }
         finally { _operations.Release(); }
+    }
+    public async Task<SpeechVisualMode> EnterTalkingAsync(CancellationToken ct)
+    {
+        await _operations.WaitAsync(ct);
+        var entered = false;
+        try
+        {
+            if (_stopped || !_started || _scheduler.IsInteracting) throw new TtsProviderException("runtime_busy");
+            await CancelLoopAsync();
+            var animations = Current?.Definition.Animations;
+            _speechVisualMode = animations?.ContainsKey("mouth-open") == true && animations.ContainsKey("mouth-closed")
+                ? SpeechVisualMode.MouthFrames : animations?.ContainsKey("talking") == true
+                    ? SpeechVisualMode.Talking : SpeechVisualMode.Compatible;
+            var behavior = new BehaviorDefinition(BehaviorId.Talking, new("talking"), 1, TimeSpan.Zero,
+                TimeSpan.FromMilliseconds(1), TimeSpan.FromMinutes(1), BehaviorPriority.High, true, [], []);
+            if (!_scheduler.State.TryEnter(behavior, _clock.GetUtcNow())) throw new TtsProviderException("runtime_busy");
+            entered = true;
+            await _presentation.PlayAsync(_speechVisualMode == SpeechVisualMode.MouthFrames ? new("mouth-closed") : new("talking"), ct);
+            _scheduler.Publish();
+            return _speechVisualMode;
+        }
+        catch
+        {
+            if (entered && _scheduler.State.Current.Primary == PetPrimaryState.Talking)
+            {
+                _speechVisualMode = SpeechVisualMode.Compatible;
+                _scheduler.State.Complete();
+                _scheduler.Publish();
+            }
+            Resume();
+            throw;
+        }
+        finally { _operations.Release(); }
+    }
+    public async Task ApplyMouthFrameAsync(bool open, CancellationToken ct)
+    {
+        await _operations.WaitAsync(ct);
+        try
+        {
+            if (_stopped || _speechVisualMode != SpeechVisualMode.MouthFrames || _scheduler.State.Current.Primary != PetPrimaryState.Talking) return;
+            await _presentation.PlayAsync(new(open ? "mouth-open" : "mouth-closed"), ct);
+        }
+        finally { _operations.Release(); }
+    }
+    public async Task ExitTalkingAsync(CancellationToken ct)
+    {
+        await _operations.WaitAsync(ct);
+        try
+        {
+            if (_scheduler.State.Current.Primary == PetPrimaryState.Talking)
+            {
+                _speechVisualMode = SpeechVisualMode.Compatible;
+                _scheduler.State.Complete();
+                if (!_stopped && _started && _scheduler.IsVisible) await _presentation.PlayAsync(AnimationSemantic.Idle, ct);
+                _scheduler.Publish();
+            }
+        }
+        finally { Resume(); _operations.Release(); }
     }
     public async ValueTask DisposeAsync()
     {

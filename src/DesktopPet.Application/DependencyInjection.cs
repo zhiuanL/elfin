@@ -11,6 +11,7 @@ using DesktopPet.Application.Movement;
 using DesktopPet.Application.Navigation;
 using DesktopPet.Application.Hotkeys;
 using DesktopPet.Application.Productivity;
+using DesktopPet.Application.Voice;
 
 namespace DesktopPet.Application;
 
@@ -47,6 +48,11 @@ public static class DependencyInjection
         services.AddSingleton<PetHost>();
         services.AddSingleton<IPetHost>(provider => provider.GetRequiredService<PetHost>());
         services.AddSingleton<ICharacterPresentation>(provider => provider.GetRequiredService<PetHost>().Runtime);
+        services.AddSingleton<ISpeechVisualController>(provider => provider.GetRequiredService<PetHost>().Runtime);
+        services.AddSingleton<VoiceProfilePolicy>();
+        services.AddSingleton<ILipSyncProvider, AmplitudeLipSyncProvider>();
+        services.AddSingleton<ISpeechService, SpeechService>();
+        services.AddSingleton<IAppCommand, VoiceSettingsCommand>();
         return services;
     }
 

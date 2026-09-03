@@ -427,3 +427,14 @@ Codex 每次只处理一个 Phase，并输出：
 - Pet Bubble、Pet Action、Windows Notification 为独立渠道，Sound 为不影响其他渠道的 NoOp；不接入 TTS。ProductivityEvent 将专注上下文和短暂 Happy 反馈送入 PetRuntime，服务不直接操作 WPF。
 - WindowsSessionStateService 仅在 Windows 层监听锁屏/睡眠/恢复。启动顺序为 DB migration → Settings → Productivity/Missed Reminder → PetRuntime；唤醒先重新计算业务，再恢复 Runtime。退出等待页面刷新循环并取消 Pomodoro/Reminder 调度器。
 - Settings schema 7 增加 Pomodoro 与漏提醒窗口配置，schema 1–6 向前迁移；Command Registry、Tray、Hotkey 共享 StartOrPausePomodoro/OpenPomodoro/OpenReminders。验证与人工限制见 Phase-6-开发报告.md 和 Phase-6-人工测试文档.md。
+
+## 27. Phase 9 实施契约注释（2026-09-03）
+
+- Phase 0–8 基线由用户确认；本阶段只实现 Voice，不引入 STT、实时流式语音、音频缓存、云同步或 Phase 10+ 功能。ISpeechToTextProvider 仅保留未注册的强类型扩展边界。
+- ISpeechService 统一承接手动朗读与 AI 自动朗读；同一时间只允许一个语音操作，新请求先取消并等待旧请求结束。拖拽、隐藏、角色切换、锁屏/睡眠和退出都是明确中断边界，异常或取消后必须退出 Talking。
+- WindowsTtsProvider 是默认离线实现，通过 System.Speech 枚举系统已安装语音并输出 WAV；无匹配 VoiceId 时按区域、语言和系统默认顺序回退。OpenAiTtsProvider 是可选在线实现，复用 Phase 7 Credential Vault，不保存或记录 API Key、朗读正文和音频。
+- OpenAI TTS 使用 /audio/speech、WAV 响应和有界音频；可重试故障按 1/3/7/15 秒退避，HTTP 403 立即终止且不重试。在线失败仅在配置允许时回退本地 Provider，不能影响 Pet Core。
+- VoiceProfile 的解析优先级为有效用户显式覆盖、当前角色 voice.json 推荐、安全默认值；每次发声重新读取当前角色，因此切换角色不会复用旧角色配置。非法 Provider、Voice、速度或音量均回落到受约束值。
+- Talking 只使用语义状态。角色同时提供 mouth-open/mouth-closed 时采用本地 WAV 振幅阈值驱动轻量开合；只有 Talking 资源时播放该语义；两者都没有时使用兼容动画，不推断音素或实现 Viseme。
+- 音频播放只在系统播放器准备就绪后进入 Talking；临时 WAV 限定在应用拥有的临时目录并在播放、失败、取消和下次启动时清理。UI 只调用 Application 服务，不读写音频、JSON、Credential 或 Windows API。
+- Settings schema 9 增加 VoiceSettings，自动朗读默认关闭；静音、Focus 抑制、在线回退、Provider/Voice/速度/音量均为强类型设置。AI 返回的 ttsPreference 只接受固定表现白名单，不能选择 Provider、URL、文件或 Credential。

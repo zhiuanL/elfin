@@ -47,6 +47,7 @@ public static class AppBootstrapper
         builder.Services.AddSingleton<AiViewModel>();
         builder.Services.AddSingleton<CharacterManagerViewModel>();
         builder.Services.AddSingleton<SettingsViewModel>();
+        builder.Services.AddSingleton<VoiceSettingsViewModel>();
         builder.Services.AddSingleton<HotkeysViewModel>();
         builder.Services.AddSingleton<DiagnosticsPageViewModel>();
         builder.Services.AddSingleton<PomodoroViewModel>();

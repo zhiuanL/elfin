@@ -6,6 +6,7 @@ using DesktopPet.Application.Windows;
 using DesktopPet.Application.Movement;
 using DesktopPet.Windows.Security;
 using DesktopPet.Windows.Windowing;
+using DesktopPet.Windows.Voice;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DesktopPet.Windows;
@@ -28,6 +29,8 @@ public static class DependencyInjection
         services.AddSingleton<ICharacterPreviewLoader, CharacterPreviewLoader>();
         services.AddSingleton<IHotkeyService, WindowsGlobalHotkeyService>();
         services.AddSingleton<ISessionStateService, WindowsSessionStateService>();
+        services.AddSingleton<ITtsProvider, WindowsTtsProvider>();
+        services.AddSingleton<IAudioPlaybackService, WindowsAudioPlaybackService>();
         services.AddSingleton<IUserConfirmationService, WindowsConfirmationService>();
         services.AddSingleton<WpfAnimationSurface>();
         services.AddSingleton<IAnimationSurface>(provider => provider.GetRequiredService<WpfAnimationSurface>());

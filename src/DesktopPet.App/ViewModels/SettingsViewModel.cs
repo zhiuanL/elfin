@@ -25,10 +25,11 @@ public sealed class SettingsViewModel : ObservableViewModel, IDisposable
     private string _notice = string.Empty;
 
     public SettingsViewModel(ISettingsService settings, ITextLocalizer text,
-        IAppearanceService appearance, IExceptionHandler exceptions, MovementToolsViewModel movement)
+        IAppearanceService appearance, IExceptionHandler exceptions, MovementToolsViewModel movement,
+        VoiceSettingsViewModel voice)
     {
         _settings = settings; _text = text; _appearance = appearance; _exceptions = exceptions;
-        Movement = movement;
+        Movement = movement; Voice = voice;
         ApplyGeneralCommand = Command(ApplyGeneralAsync);
         ApplyPetCommand = Command(ApplyPetAsync);
         ApplyAppearanceCommand = Command(ApplyAppearanceAsync);
@@ -37,6 +38,7 @@ public sealed class SettingsViewModel : ObservableViewModel, IDisposable
     }
 
     public MovementToolsViewModel Movement { get; }
+    public VoiceSettingsViewModel Voice { get; }
     public IReadOnlyList<SettingOption<string>> Cultures { get; private set; } = [];
     public IReadOnlyList<SettingOption<ControlCenterCloseBehavior>> CloseBehaviors { get; private set; } = [];
     public IReadOnlyList<SettingOption<ThemeMode>> Themes { get; private set; } = [];
@@ -112,6 +114,6 @@ public sealed class SettingsViewModel : ObservableViewModel, IDisposable
     }
     private void OnCultureChanged(object? sender, EventArgs e) { RefreshOptions(); OnPropertyChanged(string.Empty); }
     public async Task StopAsync() { _lifetime.Cancel(); await Task.WhenAll(ApplyGeneralCommand.Completion, ApplyPetCommand.Completion,
-        ApplyAppearanceCommand.Completion); }
+        ApplyAppearanceCommand.Completion); await Voice.StopAsync(); }
     public void Dispose() { _text.CultureChanged -= OnCultureChanged; _lifetime.Cancel(); _lifetime.Dispose(); }
 }

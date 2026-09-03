@@ -7,6 +7,9 @@ using DesktopPet.Infrastructure.Characters;
 using DesktopPet.Infrastructure.Configuration;
 using DesktopPet.Tests.Shared;
 using Microsoft.Extensions.Options;
+using System.Text.Json.Nodes;
+using DesktopPet.Application.Contracts;
+using DesktopPet.Windows.Voice;
 
 namespace DesktopPet.Tests.Integration;
 
@@ -112,6 +115,7 @@ public sealed class PetRuntimeTests
     [Theory]
     [InlineData(2)]
     [InlineData(3)]
+    [InlineData(8)]
     public async Task OldSettingsMigratePreservingWindowAndSelection(int schema)
     {
         using var context = new CharacterTestContext();
@@ -174,6 +178,84 @@ public sealed class PetRuntimeTests
         Assert.Equal(original, restored);
         Assert.Equal(original.GetHashCode(), restored.GetHashCode());
         Assert.False(new BehaviorCatalog(new()).Build(CharacterBehaviorProfile.Empty, restored.Runtime)[3].Enabled);
+    }
+
+    [Fact]
+    public async Task VoiceSettingsRoundTripAndSchemaEightMigratesToSafeDefaults()
+    {
+        using var context = new CharacterTestContext();
+        await context.Settings.UpdateAsync(value => value with { Voice = new()
+        {
+            Enabled = true, AutoReadAi = true, SilentMode = true, Provider = TtsProviderKind.OpenAI,
+            VoiceId = "coral", Speed = 1.2, Volume = .65, ProviderUserOverride = true, VoiceUserOverride = true
+        } }, default);
+        using var reloaded = new JsonSettingsService(context.Environment.Directories, Options.Create(new AppSettings()), context.Environment.Logger, TimeProvider.System);
+        var restored = (await reloaded.LoadAsync(default)).Settings;
+        Assert.Equal(context.Settings.Current.Voice, restored.Voice);
+        Assert.DoesNotContain("apiKey", await File.ReadAllTextAsync(Path.Combine(context.Environment.Directories.Config, "settings.json")), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task CharacterVoiceReaderConsumesValidatedRecommendationAndSwitchCanResolveAgain()
+    {
+        using var context = new CharacterTestContext();
+        var source = context.CopyFixture("dev-standard");
+        await File.WriteAllTextAsync(Path.Combine(source, "voice.json"), """{"provider":"windows","voice":"recommended","speed":0.9,"volume":0.8}""");
+        var path = Path.Combine(source, "manifest.json");
+        var root = JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        root["capabilities"]!["ttsProfile"] = true;
+        root["profiles"]!["voice"] = "voice.json";
+        await File.WriteAllTextAsync(path, root.ToJsonString());
+        var package = (await context.Manager.ImportAsync(source, default)).Package!;
+        var reader = new CharacterVoiceProfileReader(context.Settings, context.Exceptions);
+        var profile = await reader.ReadAsync(package, default);
+        Assert.Equal("windows", profile!.Provider);
+        Assert.Equal("recommended", profile.Voice);
+        Assert.Equal(.9, profile.Speed);
+    }
+
+    [Fact]
+    public async Task RuntimeTalkingStateUsesCompatibleFallbackAndDraggingInterruptsSpeech()
+    {
+        using var fixture = new RuntimeFixture();
+        await fixture.Runtime.StartAsync(default);
+        var interrupted = 0;
+        fixture.Runtime.SpeechInterruptionRequested += (_, _) => interrupted++;
+        var mode = await fixture.Runtime.EnterTalkingAsync(default);
+        Assert.Equal(SpeechVisualMode.Compatible, mode);
+        Assert.Equal(PetPrimaryState.Talking, fixture.Runtime.Snapshot.State);
+        await fixture.Runtime.ExitTalkingAsync(default);
+        Assert.Equal(PetPrimaryState.Idle, fixture.Runtime.Snapshot.State);
+        await fixture.Runtime.InteractAsync(PetInteractionKind.PointerPressed, default);
+        Assert.Equal(1, interrupted);
+        Assert.Equal(PetPrimaryState.Dragging, fixture.Runtime.Snapshot.State);
+        Assert.True((await fixture.Runtime.ActivateAsync(new("dev.elfin.basic"), default)).Succeeded);
+        Assert.Equal(2, interrupted);
+        await fixture.Runtime.StopAsync(default);
+        Assert.Equal(3, interrupted);
+    }
+
+    [Fact]
+    public async Task WindowsTtsEnumeratesInstalledVoicesAndMissingSelectionFallsBack()
+    {
+        var provider = new WindowsTtsProvider();
+        var voices = await provider.GetVoicesAsync(default);
+        Assert.NotEmpty(voices);
+        var audio = await provider.SynthesizeAsync(new("test", "en-US",
+            new(VoiceProviderIds.Windows, "missing-voice", 1, 1, string.Empty), TimeSpan.FromSeconds(5)), default);
+        Assert.True(audio.Audio.Span[..4].SequenceEqual("RIFF"u8));
+        Assert.Contains(voices, voice => voice.Id == audio.VoiceId);
+    }
+
+    [Fact]
+    public void WindowsAudioPlaybackRemovesOwnedStaleSpeechFilesOnStartup()
+    {
+        var root = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "DesktopPet", "voice"));
+        Directory.CreateDirectory(root);
+        var stale = Path.Combine(root, $"speech-{Guid.NewGuid():N}.wav");
+        File.WriteAllBytes(stale, "RIFF"u8.ToArray());
+        using var playback = new WindowsAudioPlaybackService(new CharacterTestContext.InlineDispatcher());
+        Assert.False(File.Exists(stale));
     }
 
     [Fact]

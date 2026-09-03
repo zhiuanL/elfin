@@ -9,5 +9,6 @@
   <ItemGroup>
     <ProjectReference Include="../DesktopPet.Application/DesktopPet.Application.csproj" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="System.Speech" />
   </ItemGroup>
 </Project>

@@ -50,7 +50,11 @@ public enum TextKey { AppTitle, BootstrapTitle, BootstrapDescription, OfflineRea
     AiGenerationStopped, AiAutoMemory, AiMemoryContent, AiCategory, AiImportance, AiTags,
     AiKeywords, AiSaveMemory, AiDeleteMemory, AiClearCharacter, AiClearAll,
     AiTools, AiToolsEnabled, AiMediumConfirmation, AiSaveToolSettings, AiAvailableTools,
-    AiToggleSelectedTool, AiRecentToolAudit, AiToolConfirmTitle, AiToolConfirmMessage }
+    AiToggleSelectedTool, AiRecentToolAudit, AiToolConfirmTitle, AiToolConfirmMessage,
+    VoiceSettings, VoiceEnable, VoiceAutoRead, VoiceSilent, VoiceFocusSuppression, VoiceOnlineFallback,
+    VoiceProvider, VoiceProviderWindows, VoiceProviderOpenAI, VoiceVoice, VoiceSpeed, VoiceVolume,
+    VoiceSave, VoiceTest, VoiceStop, VoiceModel, VoiceTestSample, VoiceTestSucceeded, VoiceTestFailed,
+    AiReadAloud, AiStopSpeech }
 public interface ITextLocalizer
 {
     CultureInfo Culture { get; }
