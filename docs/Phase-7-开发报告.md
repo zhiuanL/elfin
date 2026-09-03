@@ -2,7 +2,7 @@
 
 ## 1. Status
 
-**PARTIAL**。Phase 7 代码、`ai.db` migration、Debug/Release 构建和 307 项自动测试全部通过；无 AI 配置、禁用网络代理下的真实 WPF 启动/九页面遍历/退出通过。未使用真实 API Key 对四个 Provider 做联网人工验收，Windows UI 控制组件又因 `sandbox helper_unknown_error` 连续两次初始化失败，因此按 DoD 不报告 PASS。
+**PARTIAL**。Phase 7 代码、`ai.db` migration、Debug/Release 构建和 307 项自动测试全部通过；无 AI 配置、禁用网络代理下的真实 WPF 启动/九页面遍历/退出通过。用户已确认所配置 Provider 的模型获取和连接测试通过；其余真实 Provider 与完整聊天链路尚未全部人工验收，因此按 DoD 不报告 PASS。
 
 ## 2. 完成功能
 
@@ -14,6 +14,7 @@
 - Memory 查看、新增、编辑、删除、按角色/全部清空、自动开关、敏感过滤、去重和有界检索。
 - 白名单 `emotionHint`、`animationSemantic`、`ttsPreference`；前两者经 PetRuntime 门面执行，TTS 只保留提示字段。
 - 控制中心新增 AI 页面及中英文文本：会话、消息、输入、Send/Stop/Retry、Provider Setup 和 Memory 管理。
+- 聊天输入框支持 `Enter` 发送、`Shift+Enter` 换行；键盘手势只适配到现有 `SendCommand`，发送流程仍位于 ViewModel/Application Service。
 
 ## 3. 主要文件
 
@@ -64,14 +65,14 @@ AI 页首次无 Profile 时显示可跳过的 Setup。包含 Conversation List�
 
 ## 11. 人工测试
 
-环境：Windows 11 家庭版中文版 x64，10.0.26200。真实 Release WPF 进程在无 Provider、不可用代理和隔离数据目录下完成启动、九页面实例化/遍历及正常退出，Pet/Pomodoro/Reminder 未因 AI 配置缺失而失败。真实 Provider Setup、错误 Key、四 Provider Streaming、Stop/Retry、重启历史、角色切换、Memory/Persona/Hint、断网聊天、Key Replace/Delete 尚未由人工使用真实 Key 验证；UI 自动化辅助程序连续两次因 Windows sandbox helper 初始化失败，未声称视觉/点击验收。
+环境：Windows 11 家庭版中文版 x64，10.0.26200。真实 Release WPF 进程在无 Provider、不可用代理和隔离数据目录下完成启动、九页面实例化/遍历及正常退出，Pet/Pomodoro/Reminder 未因 AI 配置缺失而失败。用户人工反馈：所配置 Provider 的“获取模型”和“测试连接”均通过。错误 Key、其余 Provider、Streaming、Stop/Retry、重启历史、角色切换、Memory/Persona/Hint、断网聊天、Key Replace/Delete 尚未全部人工验证；UI 自动化辅助程序连续两次因 Windows sandbox helper 初始化失败，未声称这些项目已验收。
 
 ## 12. Open Decisions / Risks
 
 - Provider 采用共同 Chat Completions SSE 协议；接口保持稳定，未来若某 Provider 停止兼容可在适配层替换，不影响 Application/UI。
 - 自动 Memory 只从用户消息做本地轻量候选提取，避免隐式额外模型请求；更复杂抽取策略等待产品确认。
 - Hint 使用明确的 `<pet-hint>` 尾部 JSON 协议；未来若改为原生结构化输出，仅替换 Interpreter/Provider 映射。
-- 真实 Provider 的模型名、配额、区域、代理、TLS 和服务端错误格式仍需联网人工验收；真实 Key 不得写入缺陷附件或诊断包。
+- 已配置 Provider 的模型列表和连接已由用户联网验证；其余 Provider 的模型名、配额、区域、代理、TLS 和服务端错误格式仍需人工验收。真实 Key 不得写入缺陷附件或诊断包。
 - Windows 10、不同网络代理、睡眠/恢复期间 Streaming 和长时间生成尚未人工验证。
 
 ## 13. Git 状态

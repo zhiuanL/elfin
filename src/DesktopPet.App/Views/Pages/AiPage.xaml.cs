@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using DesktopPet.App.ViewModels;
 using System.ComponentModel;
 
@@ -17,6 +18,13 @@ public partial class AiPage : UserControl
     }
     private void OnPasswordChanged(object sender, RoutedEventArgs e)
     { if (DataContext is AiViewModel viewModel && sender is PasswordBox password) viewModel.ApiKey = password.Password; }
+    private void OnInputPreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter || Keyboard.Modifiers != ModifierKeys.None || DataContext is not AiViewModel viewModel
+            || !viewModel.SendCommand.CanExecute(null)) return;
+        e.Handled = true;
+        viewModel.SendCommand.Execute(null);
+    }
     private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e) => Attach(e.NewValue as AiViewModel);
     private void Attach(AiViewModel? viewModel)
     {
