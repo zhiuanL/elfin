@@ -12,7 +12,7 @@ public interface INavigationService
 public sealed class ControlCenterNavigationService : INavigationService
 {
     private static readonly HashSet<AppPage> AvailablePages =
-        [AppPage.Home, AppPage.Pomodoro, AppPage.Reminders, AppPage.Statistics,
+        [AppPage.Home, AppPage.AI, AppPage.Pomodoro, AppPage.Reminders, AppPage.Statistics,
          AppPage.Characters, AppPage.Settings, AppPage.Hotkeys, AppPage.Diagnostics];
     public AppPage Current { get; private set; } = AppPage.Home;
     public event EventHandler<NavigationChangedEventArgs>? Changed;

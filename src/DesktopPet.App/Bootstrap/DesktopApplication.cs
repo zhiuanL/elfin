@@ -19,7 +19,8 @@ public sealed class DesktopApplication(IRecoveryCoordinator recovery, MainWindow
     CharacterManagerViewModel characterManager, SettingsViewModel settings, HotkeysViewModel hotkeys,
     IAppearanceService appearance, IHotkeyCoordinator hotkeyCoordinator, ProductivityRuntimeBridge productivityBridge,
     IPomodoroService pomodoro, IReminderScheduler reminderScheduler, PomodoroViewModel pomodoroPage,
-    RemindersViewModel remindersPage, StatisticsViewModel statisticsPage, HomeDashboardViewModel home)
+    RemindersViewModel remindersPage, StatisticsViewModel statisticsPage, HomeDashboardViewModel home,
+    AiViewModel ai)
 {
     private readonly TaskCompletionSource _rendered = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly TaskCompletionSource _petRendered = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -82,6 +83,7 @@ public sealed class DesktopApplication(IRecoveryCoordinator recovery, MainWindow
         events.Dispose();
         try
         {
+            await ai.StopAsync();
             await productivityBridge.StopAsync(ct);
             await reminderScheduler.StopAsync(ct);
             await pomodoro.StopSchedulerAsync(ct);

@@ -42,7 +42,13 @@ public enum TextKey { AppTitle, BootstrapTitle, BootstrapDescription, OfflineRea
     OpenPomodoro, OpenReminders, FocusDuration, ShortBreakDuration, LongBreakDuration,
     LongBreakIntervalLabel, AutoStartNextPhase, ReminderTitleLabel, ReminderDescriptionLabel,
     ReminderRelativeMinutes, ReminderAbsoluteLocal, ReminderRecurringTime, ReminderIntervalDays,
-    ReminderWeekdays, ChannelPetBubble, ChannelPetAction, ChannelWindows, ChannelSound }
+    ReminderWeekdays, ChannelPetBubble, ChannelPetAction, ChannelWindows, ChannelSound,
+    NavAI, AiTitle, AiSubtitle, AiSetupRequired, AiProviderSettings, AiConversations, AiMessages,
+    AiInput, AiSend, AiStop, AiRetry, AiNewTemporary, AiNewTopic, AiMemory,
+    AiProvider, AiDisplayName, AiBaseUrl, AiModel, AiApiKey, AiSaveKey, AiSessionOnly,
+    AiTimeout, AiNewProvider, AiFetchModels, AiModelsLoaded, AiModelsFailed, AiSaveProvider, AiTestConnection, AiSetActive, AiDeleteProvider, AiProviderSaved,
+    AiGenerationStopped, AiAutoMemory, AiMemoryContent, AiCategory, AiImportance, AiTags,
+    AiKeywords, AiSaveMemory, AiDeleteMemory, AiClearCharacter, AiClearAll }
 public interface ITextLocalizer
 {
     CultureInfo Culture { get; }

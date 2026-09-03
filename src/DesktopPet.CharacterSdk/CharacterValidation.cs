@@ -38,7 +38,7 @@ public interface IPngInspector
 public static partial class CharacterSchema
 {
     public const int CurrentVersion = 1;
-    public static Version AppVersion => new(0, 5, 0);
+    public static Version AppVersion => new(0, 7, 0);
     [GeneratedRegex(@"^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$", RegexOptions.CultureInvariant)]
     private static partial Regex IdPattern();
     public static bool IsValidId(string? id) => id is { Length: >= 3 and <= 100 } && IdPattern().IsMatch(id);

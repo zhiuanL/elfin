@@ -29,24 +29,25 @@ public sealed class MainWindowViewModel : ObservableViewModel, IDisposable
     private bool _commandFailed;
     private HomeDashboardViewModel? _home;
     private SettingsViewModel? _settings;
+    private AiViewModel? _ai;
 
-    public MainWindowViewModel(ITextLocalizer text, INavigationService navigation, HomeDashboardViewModel home,
+    public MainWindowViewModel(ITextLocalizer text, INavigationService navigation, HomeDashboardViewModel home, AiViewModel ai,
         CharacterManagerViewModel characters, SettingsViewModel settings, HotkeysViewModel hotkeys,
         DiagnosticsPageViewModel diagnostics, PomodoroViewModel pomodoro, RemindersViewModel reminders,
         StatisticsViewModel statistics)
     {
         _text = text; _navigation = navigation;
-        _home = home;
+        _home = home; _ai = ai;
         _settings = settings;
         _pages = new Dictionary<AppPage, object>
         {
-            [AppPage.Home] = home, [AppPage.Pomodoro] = pomodoro, [AppPage.Reminders] = reminders,
+            [AppPage.Home] = home, [AppPage.AI] = ai, [AppPage.Pomodoro] = pomodoro, [AppPage.Reminders] = reminders,
             [AppPage.Statistics] = statistics, [AppPage.Characters] = characters, [AppPage.Settings] = settings,
             [AppPage.Hotkeys] = hotkeys, [AppPage.Diagnostics] = diagnostics
         };
         NavigationItems =
         [
-            Item(AppPage.Home, TextKey.NavHome), Item(AppPage.Pomodoro, TextKey.NavPomodoro),
+            Item(AppPage.Home, TextKey.NavHome), Item(AppPage.AI, TextKey.NavAI), Item(AppPage.Pomodoro, TextKey.NavPomodoro),
             Item(AppPage.Reminders, TextKey.NavReminders), Item(AppPage.Statistics, TextKey.NavStatistics),
             Item(AppPage.Characters, TextKey.NavCharacters),
             Item(AppPage.Settings, TextKey.NavSettings), Item(AppPage.Hotkeys, TextKey.NavHotkeys),
@@ -68,7 +69,7 @@ public sealed class MainWindowViewModel : ObservableViewModel, IDisposable
         _text = text; _navigation = new ControlCenterNavigationService(); _pages = new Dictionary<AppPage, object>();
         NavigationItems =
         [
-            Item(AppPage.Home, TextKey.NavHome), Item(AppPage.Pomodoro, TextKey.NavPomodoro),
+            Item(AppPage.Home, TextKey.NavHome), Item(AppPage.AI, TextKey.NavAI), Item(AppPage.Pomodoro, TextKey.NavPomodoro),
             Item(AppPage.Reminders, TextKey.NavReminders), Item(AppPage.Statistics, TextKey.NavStatistics),
             Item(AppPage.Characters, TextKey.NavCharacters),
             Item(AppPage.Settings, TextKey.NavSettings), Item(AppPage.Hotkeys, TextKey.NavHotkeys),
@@ -95,7 +96,11 @@ public sealed class MainWindowViewModel : ObservableViewModel, IDisposable
     private ICommand CreateCommand(CommandId id) => new RelayCommand(() => CommandRequested?.Invoke(this, new(id)));
     public void ReportCommandFailure() { _commandFailed = true; OnPropertyChanged(nameof(Notice)); }
     public void Initialize(StartupResult result) { _startup = result; OnPropertyChanged(string.Empty); }
-    private void OnNavigationChanged(object? sender, NavigationChangedEventArgs e) { RefreshSelection(); OnPropertyChanged(nameof(CurrentPage)); }
+    private async void OnNavigationChanged(object? sender, NavigationChangedEventArgs e)
+    {
+        RefreshSelection(); OnPropertyChanged(nameof(CurrentPage));
+        if (e.Page == AppPage.AI && _ai is not null) try { await _ai.InitializeAsync(); } catch { ReportCommandFailure(); }
+    }
     private void RefreshSelection() { foreach (var item in NavigationItems) item.SetSelected(item.Page == _navigation.Current); }
     private void OnCultureChanged(object? sender, EventArgs e)
     {

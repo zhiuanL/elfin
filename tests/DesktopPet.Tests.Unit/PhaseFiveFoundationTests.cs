@@ -21,7 +21,9 @@ public sealed class PhaseFiveFoundationTests
         navigation.Navigate(AppPage.Characters);
         Assert.Equal(AppPage.Characters, navigation.Current);
         Assert.Equal(1, changes);
-        Assert.Throws<ArgumentOutOfRangeException>(() => navigation.Navigate(AppPage.AI));
+        navigation.Navigate(AppPage.AI);
+        Assert.Equal(AppPage.AI, navigation.Current);
+        Assert.Equal(2, changes);
     }
 
     [Fact]

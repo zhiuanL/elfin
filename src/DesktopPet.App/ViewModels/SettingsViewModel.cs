@@ -64,7 +64,7 @@ public sealed class SettingsViewModel : ObservableViewModel, IDisposable
     public string ApplyAppearanceText => _text.Get(TextKey.ApplyAppearance);
     public string AppVersionText => _text.Get(TextKey.AppVersion);
     public string SettingsSchemaText => _text.Get(TextKey.SettingsSchema);
-    public string AppVersion => Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.6.0";
+    public string AppVersion => Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.7.0";
     public int SettingsSchema => AppSettings.CurrentSchemaVersion;
     public AsyncActionCommand ApplyGeneralCommand { get; }
     public AsyncActionCommand ApplyPetCommand { get; }

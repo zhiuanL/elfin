@@ -104,16 +104,20 @@ public sealed class StartupSmokeTests
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         var configuration = directory.Parent!.Name;
+        var testOutput = new DirectoryInfo(AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar));
         while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "DesktopPet.sln")))
             directory = directory.Parent;
         Assert.NotNull(directory);
-        var assembly = Path.Combine(directory.FullName, "src", "DesktopPet.App", "bin", configuration,
-            "net10.0-windows", "DesktopPet.App.dll");
+        var isolatedAssembly = testOutput.Parent?.Parent is { } artifactBin
+            ? Path.Combine(artifactBin.FullName, "DesktopPet.App", testOutput.Name, "DesktopPet.App.dll") : string.Empty;
+        var assembly = File.Exists(isolatedAssembly) ? isolatedAssembly : Path.Combine(directory.FullName,
+            "src", "DesktopPet.App", "bin", configuration, "net10.0-windows", "DesktopPet.App.dll");
         var dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
         if (string.IsNullOrEmpty(dotnet))
         {
             var root = Environment.GetEnvironmentVariable("DOTNET_ROOT");
-            dotnet = root is null ? "dotnet" : Path.Combine(root, "dotnet.exe");
+            var repositoryHost = Path.Combine(directory.FullName, ".tools", "dotnet", "dotnet.exe");
+            dotnet = File.Exists(repositoryHost) ? repositoryHost : root is null ? "dotnet" : Path.Combine(root, "dotnet.exe");
         }
         var start = new ProcessStartInfo(dotnet)
         {

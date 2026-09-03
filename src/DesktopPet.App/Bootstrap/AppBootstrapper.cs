@@ -14,6 +14,7 @@ using DesktopPet.Infrastructure;
 using DesktopPet.Infrastructure.Storage;
 using DesktopPet.Windows;
 using DesktopPet.Windows.Windowing;
+using DesktopPet.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -36,13 +37,14 @@ public static class AppBootstrapper
             .Bind(builder.Configuration.GetSection("DesktopPet"), binder => binder.ErrorOnUnknownConfiguration = true)
             .Validate(settings => settings.IsValid(), "Invalid DesktopPet configuration.")
             .ValidateOnStart();
-        builder.Services.AddApplication().AddWindowApplication().AddInfrastructure(directories).AddWindowsPlatform();
+        builder.Services.AddApplication().AddWindowApplication().AddInfrastructure(directories).AddWindowsPlatform().AddAi();
         builder.Services.AddSingleton(lifetime);
         builder.Services.AddSingleton<ICharacterSeedSource>(new DirectoryCharacterSeedSource(Path.Combine(AppContext.BaseDirectory, "DevelopmentCharacters")));
         builder.Services.AddSingleton<CharacterToolsViewModel>();
         builder.Services.AddSingleton<RuntimeDiagnosticsViewModel>();
         builder.Services.AddSingleton<MovementToolsViewModel>();
         builder.Services.AddSingleton<HomeDashboardViewModel>();
+        builder.Services.AddSingleton<AiViewModel>();
         builder.Services.AddSingleton<CharacterManagerViewModel>();
         builder.Services.AddSingleton<SettingsViewModel>();
         builder.Services.AddSingleton<HotkeysViewModel>();

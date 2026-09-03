@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="../DesktopPet.Application/DesktopPet.Application.csproj" />
+    <ProjectReference Include="../DesktopPet.AI/DesktopPet.AI.csproj" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="Microsoft.Data.Sqlite" />

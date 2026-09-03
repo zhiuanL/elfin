@@ -68,11 +68,54 @@ public static class InitialMigrations
         CREATE UNIQUE INDEX UX_ReminderExecutions_Occurrence ON ReminderExecutions(ReminderId, OccurrenceAtUtc);
         """;
 
+    public const string AiCoreSql = """
+        CREATE TABLE AiProviderProfiles (
+            Id TEXT NOT NULL PRIMARY KEY, ProviderType INTEGER NOT NULL, DisplayName TEXT NOT NULL,
+            BaseUrl TEXT NULL, Model TEXT NOT NULL, TimeoutSeconds INTEGER NOT NULL,
+            SecretReference TEXT NULL, IsActive INTEGER NOT NULL DEFAULT 0,
+            CreatedAtUtc TEXT NOT NULL, UpdatedAtUtc TEXT NOT NULL
+        );
+        CREATE UNIQUE INDEX UX_AiProviderProfiles_Active ON AiProviderProfiles((1)) WHERE IsActive=1;
+        CREATE TABLE Conversations (
+            Id TEXT NOT NULL PRIMARY KEY, CharacterId TEXT NOT NULL, Type INTEGER NOT NULL,
+            Title TEXT NOT NULL, ProtectedOlderSummary BLOB NULL,
+            CreatedAtUtc TEXT NOT NULL, UpdatedAtUtc TEXT NOT NULL
+        );
+        CREATE UNIQUE INDEX UX_Conversations_MainCharacter ON Conversations(CharacterId) WHERE Type=0;
+        CREATE INDEX IX_Conversations_Character ON Conversations(CharacterId, UpdatedAtUtc DESC);
+        CREATE TABLE Messages (
+            Id TEXT NOT NULL PRIMARY KEY, ConversationId TEXT NOT NULL REFERENCES Conversations(Id) ON DELETE CASCADE,
+            Role INTEGER NOT NULL, ProtectedContent BLOB NOT NULL, CreatedAtUtc TEXT NOT NULL,
+            Provider TEXT NULL, Model TEXT NULL, TokenUsage INTEGER NULL, Status INTEGER NOT NULL
+        );
+        CREATE INDEX IX_Messages_ConversationTime ON Messages(ConversationId, CreatedAtUtc, Id);
+        CREATE TABLE Memories (
+            Id TEXT NOT NULL PRIMARY KEY, CharacterId TEXT NOT NULL, Category INTEGER NOT NULL,
+            ProtectedContent BLOB NOT NULL, Importance INTEGER NOT NULL CHECK(Importance BETWEEN 1 AND 5),
+            SourceMessageId TEXT NULL REFERENCES Messages(Id) ON DELETE SET NULL, IsAuto INTEGER NOT NULL,
+            CreatedAtUtc TEXT NOT NULL, UpdatedAtUtc TEXT NOT NULL
+        );
+        CREATE INDEX IX_Memories_Character ON Memories(CharacterId, Importance DESC, UpdatedAtUtc DESC);
+        CREATE TABLE MemoryTags (
+            MemoryId TEXT NOT NULL REFERENCES Memories(Id) ON DELETE CASCADE,
+            Value TEXT NOT NULL, Kind INTEGER NOT NULL, PRIMARY KEY(MemoryId, Value, Kind)
+        );
+        CREATE TABLE AiUsage (
+            Id TEXT NOT NULL PRIMARY KEY, ConversationId TEXT NOT NULL REFERENCES Conversations(Id) ON DELETE CASCADE,
+            MessageId TEXT NULL REFERENCES Messages(Id) ON DELETE SET NULL, Provider TEXT NOT NULL,
+            Model TEXT NOT NULL, InputTokens INTEGER NULL, OutputTokens INTEGER NULL, CreatedAtUtc TEXT NOT NULL
+        );
+        CREATE TABLE AiCharacterPreferences (
+            CharacterId TEXT NOT NULL PRIMARY KEY, AutoMemoryEnabled INTEGER NOT NULL DEFAULT 0
+        );
+        """;
+
     public static IReadOnlyList<ISqliteMigration> Create() =>
     [
         new SqliteMigration(DatabaseKind.App, 1, "schema-history", HistorySql),
         new SqliteMigration(DatabaseKind.App, 2, "productivity-core", ProductivitySql),
-        new SqliteMigration(DatabaseKind.Ai, 1, "schema-history", HistorySql)
+        new SqliteMigration(DatabaseKind.Ai, 1, "schema-history", HistorySql),
+        new SqliteMigration(DatabaseKind.Ai, 2, "ai-core", AiCoreSql)
     ];
 }
 public sealed class MigrationHistoryException(string message) : InvalidOperationException(message);

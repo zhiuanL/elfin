@@ -8,6 +8,7 @@ using DesktopPet.Application.Runtime;
 using DesktopPet.CharacterSdk;
 using DesktopPet.Domain.Pets;
 using DesktopPet.Windows.Characters;
+using DesktopPet.AI.Contracts;
 
 namespace DesktopPet.App.ViewModels;
 
@@ -34,6 +35,7 @@ public sealed class CharacterManagerViewModel : ObservableViewModel, IDisposable
     private readonly IUserConfirmationService _confirmation;
     private readonly ITextLocalizer _text;
     private readonly IExceptionHandler _exceptions;
+    private readonly IAiChatService _ai;
     private readonly CancellationTokenSource _lifetime = new();
     private readonly SemaphoreSlim _gate = new(1, 1);
     private CharacterManagerItemViewModel? _selected;
@@ -43,10 +45,10 @@ public sealed class CharacterManagerViewModel : ObservableViewModel, IDisposable
 
     public CharacterManagerViewModel(ICharacterPackageService characters, ICharacterPresentation presentation,
         ICharacterPackagePicker picker, ICharacterPreviewLoader previews, IUserConfirmationService confirmation,
-        ITextLocalizer text, IExceptionHandler exceptions)
+        ITextLocalizer text, IExceptionHandler exceptions, IAiChatService ai)
     {
         _characters = characters; _presentation = presentation; _picker = picker; _previews = previews;
-        _confirmation = confirmation; _text = text; _exceptions = exceptions;
+        _confirmation = confirmation; _text = text; _exceptions = exceptions; _ai = ai;
         BrowseCommand = Command(BrowseAsync);
         ValidateCommand = Command(ValidateAsync);
         ImportCommand = Command(ImportAndActivateAsync);
@@ -113,6 +115,7 @@ public sealed class CharacterManagerViewModel : ObservableViewModel, IDisposable
         var imported = await _characters.ImportAsync(SourcePath, _lifetime.Token);
         ShowValidation(imported.Validation);
         if (!imported.Succeeded || imported.Package is null) return;
+        await _ai.StopAsync(_lifetime.Token);
         var activated = await _presentation.ActivateAsync(imported.Package.Definition.Id, _lifetime.Token);
         ShowValidation(activated.Validation);
         if (activated.Succeeded) Notice = _text.Get(TextKey.CharacterImportSucceeded);
@@ -121,6 +124,7 @@ public sealed class CharacterManagerViewModel : ObservableViewModel, IDisposable
     private async Task ActivateAsync()
     {
         if (Selected is null) return;
+        await _ai.StopAsync(_lifetime.Token);
         ShowValidation((await _presentation.ActivateAsync(Selected.Id, _lifetime.Token)).Validation);
         await RefreshAsync();
     }

@@ -20,8 +20,8 @@ public sealed class SqliteMigrationTests
             await env.Migrator().MigrateAsync(database, default);
             await env.Migrator().MigrateAsync(database, default);
             await using var connection = await env.Connections.OpenAsync(database, default);
-            Assert.Equal(database == DatabaseKind.App ? 2L : 1L, await Scalar(connection, "SELECT COUNT(*) FROM SchemaMigrations;"));
-            Assert.Equal(database == DatabaseKind.App ? 7L : 1L, await Scalar(connection, "SELECT COUNT(*) FROM sqlite_master WHERE type='table';"));
+            Assert.Equal(2L, await Scalar(connection, "SELECT COUNT(*) FROM SchemaMigrations;"));
+            Assert.Equal(database == DatabaseKind.App ? 7L : 8L, await Scalar(connection, "SELECT COUNT(*) FROM sqlite_master WHERE type='table';"));
         }
         Assert.True(File.Exists(Path.Combine(env.Directories.Data, "app.db")));
         Assert.True(File.Exists(Path.Combine(env.Directories.Data, "ai.db")));

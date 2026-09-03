@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="../DesktopPet.Application/DesktopPet.Application.csproj" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 </Project>

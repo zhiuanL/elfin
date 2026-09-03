@@ -14,6 +14,8 @@ using DesktopPet.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 using DesktopPet.Application.Runtime;
 using DesktopPet.Application.Productivity;
+using DesktopPet.AI.Contracts;
+using DesktopPet.Infrastructure.Security;
 
 namespace DesktopPet.Infrastructure;
 
@@ -29,6 +31,11 @@ public static class DependencyInjection
         services.AddSingleton<ICharacterBehaviorProfileReader, CharacterBehaviorProfileReader>();
         services.AddSingleton<ITextLocalizer, ResourceTextLocalizer>();
         services.AddSingleton<ISqliteConnectionFactory, SqliteConnectionFactory>();
+        services.AddSingleton<ISecretStore, DpapiFileSecretStore>();
+        services.AddSingleton<IAiProviderProfileRepository, SqliteAiProviderProfileRepository>();
+        services.AddSingleton<IConversationRepository, SqliteConversationRepository>();
+        services.AddSingleton<IMemoryRepository, SqliteMemoryRepository>();
+        services.AddSingleton<ICharacterPersonaSource, CharacterPersonaSource>();
         services.AddSingleton<IPomodoroRepository, SqlitePomodoroRepository>();
         services.AddSingleton<ITaskRepository, SqliteTaskRepository>();
         services.AddSingleton<ITagRepository, SqliteTagRepository>();
